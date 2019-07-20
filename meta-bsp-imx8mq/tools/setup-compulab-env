@@ -33,17 +33,16 @@ get_meta_compulab_bsp
 cat << eof | tee -a ${BBLAYERS_CONF} > /dev/null
 BBLAYERS += " \\
 	\${BSPDIR}/sources/meta-compulab \\
-        \${BSPDIR}/sources/meta-compulab-bsp/meta-add-ons \\
 	\${BSPDIR}/sources/meta-compulab-bsp/meta-desktop \\
 	\${BSPDIR}/sources/meta-compulab-bsp/meta-multimedia \\
-	\${BSPDIR}/sources/meta-compulab-som/meta-bsp-imx8mq \\
+	\${BSPDIR}/sources/meta-compulab-imx8mq/meta-bsp-imx8mq \\
 "
 eof
 }
 
 mod_local() {
 # Modify local.conf
-CORE_IMAGE_EXTRA_INSTALL+=" dhcp-client memtester cl-uboot cl-deploy cl-stest u-boot-fw-utils "
+CORE_IMAGE_EXTRA_INSTALL+=" dhcp-client memtester cl-uboot cl-deploy cl-stest u-boot-fw-utils imx-gpu-viv-demos"
 IMAGE_FEATURES+=" package-management ssh-server-openssh "
 cat << eof | tee -a ${LOCAL_CONF} > /dev/null
 CORE_IMAGE_EXTRA_INSTALL += "${CORE_IMAGE_EXTRA_INSTALL}"
