@@ -1,0 +1,42 @@
+From 79c1619c28223336ea78940c2e8d0580056236c5 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Sun, 21 Jul 2019 17:17:41 +0300
+Subject: [PATCH 19/20] cl-som-imx8: dts: Change mipi-dcss clock settings
+
+Change mipi-dcss clock settings.
+To be validated as soon as LVDS port gets availabel.
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm64/boot/dts/compulab/compulab-imx8mq-mipi-dcss.dtsi | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/compulab/compulab-imx8mq-mipi-dcss.dtsi b/arch/arm64/boot/dts/compulab/compulab-imx8mq-mipi-dcss.dtsi
+index 3b76716..d111993 100644
+--- a/arch/arm64/boot/dts/compulab/compulab-imx8mq-mipi-dcss.dtsi
++++ b/arch/arm64/boot/dts/compulab/compulab-imx8mq-mipi-dcss.dtsi
+@@ -21,14 +21,17 @@
+          <&clk IMX8MQ_CLK_DISP_RTRM_ROOT>,
+          <&clk IMX8MQ_CLK_DC_PIXEL>,
+          <&clk IMX8MQ_CLK_DUMMY>,
+-         <&clk IMX8MQ_CLK_DISP_DTRC>;
+-    clock-names = "apb", "axi", "rtrm", "pix_div", "pix_out", "dtrc";
++         <&clk IMX8MQ_CLK_DISP_DTRC>,
++	 <&clk IMX8MQ_CLK_PHY_27MHZ>;
++    clock-names = "apb", "axi", "rtrm", "pix", "dtrc", "pll", "pll_src1";
+     assigned-clocks = <&clk IMX8MQ_CLK_DC_PIXEL>,
+               <&clk IMX8MQ_CLK_DISP_AXI>,
+-              <&clk IMX8MQ_CLK_DISP_RTRM>;
++              <&clk IMX8MQ_CLK_DISP_RTRM>,
++	      <&clk IMX8MQ_VIDEO2_PLL1_REF_SEL>;
+     assigned-clock-parents = <&clk IMX8MQ_VIDEO_PLL1_OUT>,
+                  <&clk IMX8MQ_SYS1_PLL_800M>,
+-                 <&clk IMX8MQ_SYS1_PLL_800M>;
++                 <&clk IMX8MQ_SYS1_PLL_800M>,
++		 <&clk IMX8MQ_CLK_27M>;
+     assigned-clock-rates = <594000000>,
+                    <800000000>,
+                    <400000000>;
+-- 
+1.9.1
+

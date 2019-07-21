@@ -18,5 +18,7 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0016-cl-som-imx8-Remove-unused-dvfs-regulator.patch \
 	file://0017-cl-som-imx8-rmpms-Removed-the-rpmsg-pingpong-area.patch \
 	file://0018-cl-som-imx8-dts-m4-Added-sbc-imx8-m4-file.patch \
+	file://0019-cl-som-imx8-dts-Change-mipi-dcss-clock-settings.patch \
+	file://0020-cl-som-imx8-defconfig-Update-config.patch \
 	file://defconfig \
 "

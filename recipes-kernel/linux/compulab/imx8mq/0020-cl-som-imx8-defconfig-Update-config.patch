@@ -1,0 +1,52 @@
+From ad3319eb0f5a51dace64c85d2587f232865b4b2b Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Sun, 21 Jul 2019 17:20:41 +0300
+Subject: [PATCH 20/20] cl-som-imx8: defconfig: Update config
+
+1) Change default governon to userspace
+2) Enable LCDIF_CORE
+3) Enable FTDI and CP210X
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm64/configs/cl-som-imx8_defconfig | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm64/configs/cl-som-imx8_defconfig b/arch/arm64/configs/cl-som-imx8_defconfig
+index 0f42d8d..603ecac 100644
+--- a/arch/arm64/configs/cl-som-imx8_defconfig
++++ b/arch/arm64/configs/cl-som-imx8_defconfig
+@@ -57,9 +57,10 @@ CONFIG_PM_TEST_SUSPEND=y
+ CONFIG_ARM_CPUIDLE=y
+ CONFIG_CPU_FREQ=y
+ CONFIG_CPU_FREQ_STAT=y
+-CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
++CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE=y
++CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+ CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+-CONFIG_CPU_FREQ_GOV_USERSPACE=y
++CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+ CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
+ CONFIG_CPU_FREQ_GOV_SCHEDUTIL=y
+ CONFIG_CPU_FREQ_GOV_INTERACTIVE=y
+@@ -291,6 +292,7 @@ CONFIG_MXC_CAMERA_OV5640_MIPI_V2=y
+ CONFIG_V4L_MEM2MEM_DRIVERS=y
+ CONFIG_IMX_DPU_CORE=y
+ CONFIG_IMX_DCSS_CORE=y
++CONFIG_IMX_LCDIF_CORE=y
+ CONFIG_DRM=y
+ CONFIG_DRM_VIVANTE=y
+ CONFIG_DRM_PANEL_SIMPLE=m
+@@ -345,6 +347,9 @@ CONFIG_USB_ISP1760_HOST_ROLE=y
+ CONFIG_USB_CDNS3=y
+ CONFIG_USB_CDNS3_GADGET=y
+ CONFIG_USB_CDNS3_HOST=y
++CONFIG_USB_SERIAL=m
++CONFIG_USB_SERIAL_CP210X=m
++CONFIG_USB_SERIAL_FTDI_SIO=m
+ CONFIG_USB_TEST=m
+ CONFIG_USB_EHSET_TEST_FIXTURE=y
+ CONFIG_USB_HSIC_USB3503=y
+-- 
+1.9.1
+
