@@ -13,5 +13,6 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0011-cl-som-imx8-defconfig-Enable-USB-ethernet.patch \
 	file://0012-cl-som-imx8-defconfig-Add-rev-to-LOCAL_VERSION.patch \
 	file://0013-cl-som-imx8-defconfig-Add-d1-d2-configs.patch \
+	file://0014-cl-som-imx8-defconfig-Enable-OPTEE.patch \
 	file://cl-som-imx8_defconfig \
 "
