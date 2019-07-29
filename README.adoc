@@ -49,4 +49,4 @@ fw_setenv fdt_file sbc-imx8-bluetooth.dtb
 NOTE: In `Linux` boot environment device defined by the `/etc/fw_env.config` file.
 
 ## Pre- built image
-* https://drive.google.com/open?id=1fP_EMmb8MRLJ3oShSnmPJy1uT3m_MzAm[Xwayland Qt5 Image]
+* https://drive.google.com/drive/folders/1k_nFGZpbbUXt3tlqD0Exwok9bnSC-zc5[XWayland Qt5 Image & readme.txt]
