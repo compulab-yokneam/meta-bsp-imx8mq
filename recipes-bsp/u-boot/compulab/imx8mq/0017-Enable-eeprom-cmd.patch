@@ -1,0 +1,1304 @@
+From a8efb8cd53efd5ecf8a0487ebe12ee8585129762 Mon Sep 17 00:00:00 2001
+From: Kirill Kapranov <kirill.kapranov@compulab.co.il>
+Date: Tue, 30 Jul 2019 22:23:46 +0300
+Subject: [PATCH 16/16] Enable eeprom cmd
+
+Signed-off-by: Kirill Kapranov <kirill.kapranov@compulab.co.il>
+---
+ board/compulab/cl-som-imx8/eeprom.c   |  22 ----
+ board/compulab/common/Makefile        |   3 +-
+ board/compulab/common/common.c        | 204 +++++++++++++++++++++++++++++-
+ board/compulab/common/common.h        |  32 +++++
+ board/compulab/common/eeprom.c        | 228 +++++++++++++++++++++++-----------
+ board/compulab/common/eeprom.h        |   7 +-
+ board/compulab/common/omap3_display.c |   4 +-
+ cmd/eeprom.c                          |  55 ++++++++
+ common/eeprom/eeprom_field.c          | 116 ++++++++++++-----
+ common/eeprom/eeprom_layout.c         |  58 +++++++--
+ configs/cl-som-imx8_defconfig         |   8 ++
+ include/configs/cl-som-imx8.h         |   9 ++
+ include/eeprom_field.h                |  45 ++++---
+ include/eeprom_layout.h               |   2 +
+ 14 files changed, 634 insertions(+), 159 deletions(-)
+
+diff --git a/board/compulab/cl-som-imx8/eeprom.c b/board/compulab/cl-som-imx8/eeprom.c
+index aa733b60b4..fd1fa49e21 100644
+--- a/board/compulab/cl-som-imx8/eeprom.c
++++ b/board/compulab/cl-som-imx8/eeprom.c
+@@ -110,28 +110,6 @@ static int cpl_eeprom_setup(uint eeprom_bus)
+ 	return 0;
+ }
+ 
+-void get_board_serial(struct tag_serialnr *serialnr)
+-{
+-	u32 serial[2];
+-	uint offset;
+-
+-	memset(serialnr, 0, sizeof(*serialnr));
+-
+-	if (cpl_eeprom_setup(CONFIG_SYS_I2C_EEPROM_BUS))
+-		return;
+-
+-	offset = (cpl_eeprom_layout != LAYOUT_LEGACY) ?
+-		BOARD_SERIAL_OFFSET : BOARD_SERIAL_OFFSET_LEGACY;
+-
+-	if (cpl_eeprom_read(offset, (uchar *)serial, 8))
+-		return;
+-
+-	if (serial[0] != 0xffffffff && serial[1] != 0xffffffff) {
+-		serialnr->low = serial[0];
+-		serialnr->high = serial[1];
+-	}
+-}
+-
+ /*
+  * Routine: cpl_eeprom_read_mac_addr
+  * Description: read mac address and store it in buf.
+diff --git a/board/compulab/common/Makefile b/board/compulab/common/Makefile
+index 286f32731d..796fb037c3 100644
+--- a/board/compulab/common/Makefile
++++ b/board/compulab/common/Makefile
+@@ -7,6 +7,7 @@
+ #
+ 
+ obj-y				+= common.o
+-obj-$(CONFIG_SYS_I2C)		+= eeprom.o
++#obj-$(CONFIG_SYS_I2C)		+= eeprom.o
++obj-y		+= eeprom.o
+ obj-$(CONFIG_LCD)		+= omap3_display.o
+ obj-$(CONFIG_SMC911X)		+= omap3_smc911x.o
+diff --git a/board/compulab/common/common.c b/board/compulab/common/common.c
+index bf2ac7bd7f..9a5b2bd40f 100644
+--- a/board/compulab/common/common.c
++++ b/board/compulab/common/common.c
+@@ -10,7 +10,7 @@
+ #include <asm/bootm.h>
+ #include <asm/gpio.h>
+ #include <asm/setup.h>
+-
++#include <eeprom_layout.h>
+ #include "common.h"
+ #include "eeprom.h"
+ 
+@@ -58,3 +58,205 @@ void cl_usb_hub_deinit(int gpio)
+ 	gpio_free(gpio);
+ }
+ #endif
++
++#ifdef CONFIG_OF_BOARD_SETUP
++#include <fdt_support.h>
++#include <malloc.h>
++
++/* FDT nodes list */
++static struct list_head fdt_nodes;
++
++char *fdt_node_action_name[] = {
++	"NODE_ENABLE",
++	"NODE_DISABLE",
++	"NODE_DELETE",
++	"NODE_PROP_SET",
++	"NODE_PROP_DELETE",
++};
++
++static inline void fdt_node_list_create(void)
++{
++	INIT_LIST_HEAD(&fdt_nodes);
++}
++
++static struct list_head *fdt_node_list_get(void)
++{
++	static int initialized;
++
++	if (!initialized) {
++		fdt_node_list_create();
++		initialized = 1;
++	}
++
++	return &fdt_nodes;
++}
++
++static inline void fdt_node_prepare(struct fdt_node *node, const char *name,
++				    struct fdt_node_prop *prop,
++				    enum fdt_node_action action)
++{
++	memset(node, 0, sizeof(struct fdt_node));
++	node->name = name;
++	node->acton = action;
++	node->prop = prop;
++	INIT_LIST_HEAD(&node->list);
++}
++
++static void fdt_node_insert(struct fdt_node *node)
++{
++	struct list_head *fdt_node_list = fdt_node_list_get();
++
++	list_add_tail(&node->list, fdt_node_list);
++}
++
++static int fdt_node_add(const char *name, enum fdt_node_action action)
++{
++	struct fdt_node *node = NULL;
++
++	node = (struct fdt_node *)malloc(sizeof(struct fdt_node));
++	if (!node)
++		return -ENOMEM;
++
++	fdt_node_prepare(node, name, NULL, action);
++
++	fdt_node_insert(node);
++
++	return 0;
++}
++
++int fdt_node_enable(const char *name)
++{
++	return fdt_node_add(name, FDT_NODE_ENABLE);
++}
++
++int fdt_node_disable(const char *name)
++{
++	return fdt_node_add(name, FDT_NODE_DISABLE);
++}
++
++int fdt_node_delete(const char *name)
++{
++	return fdt_node_add(name, FDT_NODE_DELETE);
++}
++
++static int fdt_prop_add(const char *node, enum fdt_node_action action,
++			const char *name, void *val, int len,
++			int create)
++{
++	struct fdt_node *new = NULL;
++	struct fdt_node_prop *prop = NULL;
++
++	prop = (struct fdt_node_prop *)malloc(sizeof(struct fdt_node_prop)
++					      + len);
++	if (!prop)
++		return -ENOMEM;
++
++	memset(prop, 0, sizeof(struct fdt_node_prop));
++	prop->name = name;
++	if (action == FDT_NODE_PROP_SET) {
++		if (val)
++			memcpy(prop->val, val, len);
++		prop->len = len;
++		prop->create = create;
++	}
++
++	/* Prepare and populate node struct, insert to the list */
++	new = (struct fdt_node *)malloc(sizeof(struct fdt_node));
++	if (!new)
++		return -ENOMEM;
++
++	fdt_node_prepare(new, node, prop, action);
++
++	fdt_node_insert(new);
++
++	return 0;
++}
++
++int fdt_prop_set(const char *node, const char *name,
++		 void *val, int len, int create)
++{
++	return fdt_prop_add(node, FDT_NODE_PROP_SET, name,
++			    val, len, create);
++}
++
++int fdt_prop_del(const char *node, const char *name)
++{
++	return fdt_prop_add(node, FDT_NODE_PROP_DELETE, name,
++			    NULL, 0, 0);
++}
++
++int __weak fdt_board_adjust(void)
++{
++	return 0;
++}
++
++int __weak ft_board_setup(void *blob, bd_t *bd)
++{
++	struct list_head *fdt_nodes_list;
++	struct list_head *entry, *tmp;
++	struct fdt_node *node;
++	struct fdt_node_prop *prop;
++	int nodeoffset;
++
++	/* Resize FDT to be on the safe side */
++	fdt_shrink_to_minimum(blob, 0);
++
++	/* Call board specific routine to populate the node list */
++	fdt_board_adjust();
++
++	/* Get node list */
++	fdt_nodes_list = fdt_node_list_get();
++
++	/* For each node check action to be done and apply required changes */
++	list_for_each_safe(entry, tmp, fdt_nodes_list) {
++		/* Get list entry */
++		node = list_entry(entry, struct fdt_node, list);
++		prop = node->prop;
++		debug("%s: get node: name %s, action %s\n",
++		      __func__, node->name, fdt_node_action_name[node->acton]);
++		if (node->acton >= FDT_NODE_PROP_SET) {
++			int i;
++			debug("%s: node prop name %s\n",
++			      __func__, node->prop->name);
++			debug("%s: prop val", __func__);
++			for (i = 0; i < node->prop->len; i++)
++				debug(" %02x", ((char *)(node->prop->val))[i]);
++			debug("\n");
++		}
++
++		switch (node->acton) {
++		case FDT_NODE_ENABLE:
++			fdt_status_okay_by_alias(blob, node->name);
++			break;
++		case FDT_NODE_DISABLE:
++			fdt_status_disabled_by_alias(blob, node->name);
++			break;
++		case FDT_NODE_DELETE:
++			fdt_del_node_and_alias(blob, node->name);
++			break;
++		case FDT_NODE_PROP_SET:
++			fdt_find_and_setprop(blob, node->name, prop->name,
++					     prop->val, prop->len,
++					     prop->create);
++			break;
++		case FDT_NODE_PROP_DELETE:
++			nodeoffset = fdt_path_offset(blob, node->name);
++			fdt_delprop(blob, nodeoffset, prop->name);
++			break;
++		default:
++			debug("%s: Error: unsupported node action\n",
++			      __func__);
++		}
++
++		/* Delete list entry */
++		list_del(entry);
++		/* Free memory allocated */
++		if (prop)
++			free(prop);
++
++		free(node);
++	}
++
++	return 0;
++}
++#endif
+diff --git a/board/compulab/common/common.h b/board/compulab/common/common.h
+index 759ec31317..329b75b27f 100644
+--- a/board/compulab/common/common.h
++++ b/board/compulab/common/common.h
+@@ -35,4 +35,36 @@ static inline int cl_omap3_smc911x_init(int id, int cs, u32 base_addr,
+ }
+ #endif /* CONFIG_SMC911X */
+ 
++#ifdef CONFIG_OF_BOARD_SETUP
++enum fdt_node_action {
++	FDT_NODE_ENABLE,
++	FDT_NODE_DISABLE,
++	FDT_NODE_DELETE,
++	FDT_NODE_PROP_SET,
++	FDT_NODE_PROP_DELETE,
++};
++
++struct fdt_node_prop {
++	const char *name;
++	int len;
++	int create;
++	char val[0];
++};
++
++struct fdt_node {
++	struct list_head list;
++	const char *name;
++	struct fdt_node_prop *prop;
++	enum fdt_node_action acton;
++};
++
++int fdt_board_adjust(void);
++int fdt_node_enable(const char *name);
++int fdt_node_disable(const char *name);
++int fdt_node_delete(const char *name);
++int fdt_prop_set(const char *node, const char *name,
++		 void *val, int len, int create);
++int fdt_prop_del(const char *node, const char *name);
++#endif
++
+ #endif /* _CL_COMMON_ */
+diff --git a/board/compulab/common/eeprom.c b/board/compulab/common/eeprom.c
+index 65ba3d3a1f..ed6d3d06d7 100644
+--- a/board/compulab/common/eeprom.c
++++ b/board/compulab/common/eeprom.c
+@@ -11,8 +11,8 @@
+ #include <i2c.h>
+ #include <eeprom_layout.h>
+ #include <eeprom_field.h>
+-#include <linux/kernel.h>
+ #include <asm/setup.h>
++#include <linux/kernel.h>
+ #include "eeprom.h"
+ 
+ #ifndef CONFIG_SYS_I2C_EEPROM_ADDR
+@@ -83,7 +83,7 @@ static int cl_eeprom_setup(uint eeprom_bus)
+ 	return 0;
+ }
+ 
+-void cpl_get_board_serial(struct tag_serialnr *serialnr)
++void get_board_serial(struct tag_serialnr *serialnr)
+ {
+ 	u32 serial[2];
+ 	uint offset;
+@@ -187,6 +187,42 @@ int cl_eeprom_get_product_name(uchar *buf, uint eeprom_bus)
+ }
+ 
+ #ifdef CONFIG_CMD_EEPROM_LAYOUT
++
++/*
++ * Routine: cl_eeprom_layout_setup
++ * Description:
++ * - Read EEPROM content.
++ * - Setup layout struct with the layout data and metadata.
++ *
++ * @layout:    A pointer to an existing struct layout.
++ * @eeprom_buf:        A buffer initialized with the eeprom data.
++ * @layout version: The version number of the layout.
++ * @eeprom_bus: EEPROM I2C bus ID.
++ * @eeprom_addr: EEPROM I2C address.
++ *
++ * @return: 0 on success, < 0 on failure
++ */
++int cl_eeprom_layout_setup(struct eeprom_layout *layout, uchar *eeprom_buf,
++                           int layout_version, uint eeprom_bus,
++			   uint8_t eeprom_addr)
++{
++	int ret;
++
++	ret = i2c_set_bus_num(eeprom_bus);
++	if (ret < 0)
++		return ret;
++
++	ret = i2c_read(eeprom_addr, 0, CONFIG_SYS_I2C_EEPROM_ADDR_LEN,
++		       eeprom_buf, CONFIG_SYS_EEPROM_SIZE);
++	if (ret < 0)
++		return ret;
++
++	eeprom_layout_setup(layout, eeprom_buf, CONFIG_SYS_EEPROM_SIZE,
++			    layout_version);
++
++	return 0;
++}
++
+ /**
+  * eeprom_field_print_bin_ver() - print a "version field" which contains binary
+  *				  data
+@@ -199,17 +235,18 @@ int cl_eeprom_get_product_name(uchar *buf, uint eeprom_bus)
+  *      Field Name      123.45
+  *
+  * @field:	an initialized field to print
++ * @fbuf:	field buffer
+  */
+-void eeprom_field_print_bin_ver(const struct eeprom_field *field)
++void eeprom_field_print_bin_ver(const struct eeprom_field *field, uchar *fbuf)
+ {
+-	if ((field->buf[0] == 0xff) && (field->buf[1] == 0xff)) {
+-		field->buf[0] = 0;
+-		field->buf[1] = 0;
++	if ((fbuf[0] == 0xff) && (fbuf[1] == 0xff)) {
++		fbuf[0] = 0;
++		fbuf[1] = 0;
+ 	}
+ 
+ 	printf(PRINT_FIELD_SEGMENT, field->name);
+-	int major = (field->buf[1] << 8 | field->buf[0]) / 100;
+-	int minor = (field->buf[1] << 8 | field->buf[0]) - major * 100;
++	int major = (fbuf[1] << 8 | fbuf[0]) / 100;
++	int minor = (fbuf[1] << 8 | fbuf[0]) - major * 100;
+ 	printf("%d.%02d\n", major, minor);
+ }
+ 
+@@ -225,11 +262,13 @@ void eeprom_field_print_bin_ver(const struct eeprom_field *field)
+  * field if there's any deviation from it. It also protects from overflow.
+  *
+  * @field:	an initialized field
++ * @fbuf:	field buffer
+  * @value:	a version string
+  *
+  * Returns 0 on success, -1 on failure.
+  */
+-int eeprom_field_update_bin_ver(struct eeprom_field *field, char *value)
++int eeprom_field_update_bin_ver(struct eeprom_field *field, uchar *fbuf,
++				char *value)
+ {
+ 	char *endptr;
+ 	char *tok = strtok(value, ".");
+@@ -252,8 +291,8 @@ int eeprom_field_update_bin_ver(struct eeprom_field *field, char *value)
+ 	if (num >> 16)
+ 		return -1;
+ 
+-	field->buf[0] = (unsigned char)num;
+-	field->buf[1] = num >> 8;
++	fbuf[0] = (unsigned char)num;
++	fbuf[1] = num >> 8;
+ 
+ 	return 0;
+ }
+@@ -270,17 +309,18 @@ char *months[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  *      Field Name      56/BAD/9999
+  *
+  * @field:	an initialized field to print
++ * @fbuf:	field buffer
+  */
+-void eeprom_field_print_date(const struct eeprom_field *field)
++void eeprom_field_print_date(const struct eeprom_field *field, uchar *fbuf)
+ {
+ 	printf(PRINT_FIELD_SEGMENT, field->name);
+-	printf("%02d/", field->buf[0]);
+-	if (field->buf[1] >= 1 && field->buf[1] <= 12)
+-		printf("%s", months[field->buf[1] - 1]);
++	printf("%02d/", fbuf[0]);
++	if (fbuf[1] >= 1 && fbuf[1] <= 12)
++		printf("%s", months[fbuf[1] - 1]);
+ 	else
+ 		printf("BAD");
+ 
+-	printf("/%d\n", field->buf[3] << 8 | field->buf[2]);
++	printf("/%d\n", fbuf[3] << 8 | fbuf[2]);
+ }
+ 
+ static int validate_date(unsigned char day, unsigned char month,
+@@ -338,11 +378,13 @@ static int validate_date(unsigned char day, unsigned char month,
+  * year value, and checks the validity of the date.
+  *
+  * @field:	an initialized field
++ * @fbuf:	field buffer
+  * @value:	a date string
+  *
+  * Returns 0 on success, -1 on failure.
+  */
+-int eeprom_field_update_date(struct eeprom_field *field, char *value)
++int eeprom_field_update_date(struct eeprom_field *field, uchar *fbuf,
++			     char *value)
+ {
+ 	char *endptr;
+ 	char *tok1 = strtok(value, "/");
+@@ -381,10 +423,10 @@ int eeprom_field_update_date(struct eeprom_field *field, char *value)
+ 		return -1;
+ 	}
+ 
+-	field->buf[0] = day;
+-	field->buf[1] = month;
+-	field->buf[2] = (unsigned char)year;
+-	field->buf[3] = (unsigned char)(year >> 8);
++	fbuf[0] = day;
++	fbuf[1] = month;
++	fbuf[2] = (unsigned char)year;
++	fbuf[3] = (unsigned char)(year >> 8);
+ 
+ 	return 0;
+ }
+@@ -393,19 +435,28 @@ int eeprom_field_update_date(struct eeprom_field *field, char *value)
+ #define	LAYOUT_VERSION_VER1 2
+ #define	LAYOUT_VERSION_VER2 3
+ #define	LAYOUT_VERSION_VER3 4
++#define	LAYOUT_VERSION_VER4 5
+ 
+ extern struct eeprom_field layout_unknown[1];
+ 
+-#define DEFINE_PRINT_UPDATE(x) eeprom_field_print_##x, eeprom_field_update_##x
++#define DEFINE_FIELD_FUNC(x) eeprom_field_print_##x, eeprom_field_update_##x, \
++			     eeprom_field_read_bin
++
++#define FIELD_FUNC_RES_LAST eeprom_field_print_reserved, \
++			    eeprom_field_update_ascii,   \
++			    eeprom_field_read_bin
++
++#define FIELD_FUNC_SERIAL eeprom_field_print_bin_rev,  \
++			  eeprom_field_update_bin_rev, \
++			  eeprom_field_read_rev
+ 
+ #ifdef CONFIG_CM_T3X
+ struct eeprom_field layout_legacy[5] = {
+-	{ "MAC address",          6, NULL, DEFINE_PRINT_UPDATE(mac) },
+-	{ "Board Revision",       2, NULL, DEFINE_PRINT_UPDATE(bin) },
+-	{ "Serial Number",        8, NULL, DEFINE_PRINT_UPDATE(bin) },
+-	{ "Board Configuration", 64, NULL, DEFINE_PRINT_UPDATE(ascii) },
+-	{ RESERVED_FIELDS,      176, NULL, eeprom_field_print_reserved,
+-					   eeprom_field_update_ascii },
++	{ "MAC address",          6, DEFINE_FIELD_FUNC(mac) },
++	{ "Board Revision",       2, DEFINE_FIELD_FUNC(bin) },
++	{ "Serial Number",        8, DEFINE_FIELD_FUNC(bin) },
++	{ "Board Configuration", 64, DEFINE_FIELD_FUNC(ascii) },
++	{ RESERVED_FIELDS,      176, FIELD_FUNC_RES_LAST }
+ };
+ #else
+ #define layout_legacy layout_unknown
+@@ -413,61 +464,82 @@ struct eeprom_field layout_legacy[5] = {
+ 
+ #if defined(CONFIG_CM_T3X) || defined(CONFIG_CM_T3517)
+ struct eeprom_field layout_v1[12] = {
+-	{ "Major Revision",      2, NULL, DEFINE_PRINT_UPDATE(bin_ver) },
+-	{ "Minor Revision",      2, NULL, DEFINE_PRINT_UPDATE(bin_ver) },
+-	{ "1st MAC Address",     6, NULL, DEFINE_PRINT_UPDATE(mac) },
+-	{ "2nd MAC Address",     6, NULL, DEFINE_PRINT_UPDATE(mac) },
+-	{ "Production Date",     4, NULL, DEFINE_PRINT_UPDATE(date) },
+-	{ "Serial Number",      12, NULL, DEFINE_PRINT_UPDATE(bin_rev) },
+-	{ RESERVED_FIELDS,      96, NULL, DEFINE_PRINT_UPDATE(reserved) },
+-	{ "Product Name",       16, NULL, DEFINE_PRINT_UPDATE(ascii) },
+-	{ "Product Options #1", 16, NULL, DEFINE_PRINT_UPDATE(ascii) },
+-	{ "Product Options #2", 16, NULL, DEFINE_PRINT_UPDATE(ascii) },
+-	{ "Product Options #3", 16, NULL, DEFINE_PRINT_UPDATE(ascii) },
+-	{ RESERVED_FIELDS,      64, NULL, eeprom_field_print_reserved,
+-					  eeprom_field_update_ascii },
++	{ "Major Revision",      2, DEFINE_FIELD_FUNC(bin_ver) },
++	{ "Minor Revision",      2, DEFINE_FIELD_FUNC(bin_ver) },
++	{ "1st MAC Address",     6, DEFINE_FIELD_FUNC(mac) },
++	{ "2nd MAC Address",     6, DEFINE_FIELD_FUNC(mac) },
++	{ "Production Date",     4, DEFINE_FIELD_FUNC(date) },
++	{ "Serial Number",      12, FIELD_FUNC_SERIAL },
++	{ RESERVED_FIELDS,      96, DEFINE_FIELD_FUNC(reserved) },
++	{ "Product Name",       16, DEFINE_FIELD_FUNC(ascii) },
++	{ "Product Options #1", 16, DEFINE_FIELD_FUNC(ascii) },
++	{ "Product Options #2", 16, DEFINE_FIELD_FUNC(ascii) },
++	{ "Product Options #3", 16, DEFINE_FIELD_FUNC(ascii) },
++	{ RESERVED_FIELDS,      64, FIELD_FUNC_RES_LAST }
+ };
+ #else
+ #define layout_v1 layout_unknown
+ #endif
+ 
+ struct eeprom_field layout_v2[15] = {
+-	{ "Major Revision",            2, NULL, DEFINE_PRINT_UPDATE(bin_ver) },
+-	{ "Minor Revision",            2, NULL, DEFINE_PRINT_UPDATE(bin_ver) },
+-	{ "1st MAC Address",           6, NULL, DEFINE_PRINT_UPDATE(mac) },
+-	{ "2nd MAC Address",           6, NULL, DEFINE_PRINT_UPDATE(mac) },
+-	{ "Production Date",           4, NULL, DEFINE_PRINT_UPDATE(date) },
+-	{ "Serial Number",            12, NULL, DEFINE_PRINT_UPDATE(bin_rev) },
+-	{ "3rd MAC Address (WIFI)",    6, NULL, DEFINE_PRINT_UPDATE(mac) },
+-	{ "4th MAC Address (Bluetooth)", 6, NULL, DEFINE_PRINT_UPDATE(mac) },
+-	{ "Layout Version",            1, NULL, DEFINE_PRINT_UPDATE(bin) },
+-	{ RESERVED_FIELDS,            83, NULL, DEFINE_PRINT_UPDATE(reserved) },
+-	{ "Product Name",             16, NULL, DEFINE_PRINT_UPDATE(ascii) },
+-	{ "Product Options #1",       16, NULL, DEFINE_PRINT_UPDATE(ascii) },
+-	{ "Product Options #2",       16, NULL, DEFINE_PRINT_UPDATE(ascii) },
+-	{ "Product Options #3",       16, NULL, DEFINE_PRINT_UPDATE(ascii) },
+-	{ RESERVED_FIELDS,            64, NULL, eeprom_field_print_reserved,
+-						eeprom_field_update_ascii },
++	{ "Major Revision",            2, DEFINE_FIELD_FUNC(bin_ver) },
++	{ "Minor Revision",            2, DEFINE_FIELD_FUNC(bin_ver) },
++	{ "1st MAC Address",           6, DEFINE_FIELD_FUNC(mac) },
++	{ "2nd MAC Address",           6, DEFINE_FIELD_FUNC(mac) },
++	{ "Production Date",           4, DEFINE_FIELD_FUNC(date) },
++	{ "Serial Number",            12, FIELD_FUNC_SERIAL },
++	{ "3rd MAC Address (WIFI)",    6, DEFINE_FIELD_FUNC(mac) },
++	{ "4th MAC Address (Bluetooth)", 6, DEFINE_FIELD_FUNC(mac) },
++	{ "Layout Version",            1, DEFINE_FIELD_FUNC(bin) },
++	{ RESERVED_FIELDS,            83, DEFINE_FIELD_FUNC(reserved) },
++	{ "Product Name",             16, DEFINE_FIELD_FUNC(ascii) },
++	{ "Product Options #1",       16, DEFINE_FIELD_FUNC(ascii) },
++	{ "Product Options #2",       16, DEFINE_FIELD_FUNC(ascii) },
++	{ "Product Options #3",       16, DEFINE_FIELD_FUNC(ascii) },
++	{ RESERVED_FIELDS,            64, FIELD_FUNC_RES_LAST },
+ };
+ 
+ struct eeprom_field layout_v3[16] = {
+-	{ "Major Revision",            2, NULL, DEFINE_PRINT_UPDATE(bin_ver) },
+-	{ "Minor Revision",            2, NULL, DEFINE_PRINT_UPDATE(bin_ver) },
+-	{ "1st MAC Address",           6, NULL, DEFINE_PRINT_UPDATE(mac) },
+-	{ "2nd MAC Address",           6, NULL, DEFINE_PRINT_UPDATE(mac) },
+-	{ "Production Date",           4, NULL, DEFINE_PRINT_UPDATE(date) },
+-	{ "Serial Number",            12, NULL, DEFINE_PRINT_UPDATE(bin_rev) },
+-	{ "3rd MAC Address (WIFI)",    6, NULL, DEFINE_PRINT_UPDATE(mac) },
+-	{ "4th MAC Address (Bluetooth)", 6, NULL, DEFINE_PRINT_UPDATE(mac) },
+-	{ "Layout Version",            1, NULL, DEFINE_PRINT_UPDATE(bin) },
+-	{ "CompuLab EEPROM ID",        3, NULL, DEFINE_PRINT_UPDATE(bin) },
+-	{ RESERVED_FIELDS,            80, NULL, DEFINE_PRINT_UPDATE(reserved) },
+-	{ "Product Name",             16, NULL, DEFINE_PRINT_UPDATE(ascii) },
+-	{ "Product Options #1",       16, NULL, DEFINE_PRINT_UPDATE(ascii) },
+-	{ "Product Options #2",       16, NULL, DEFINE_PRINT_UPDATE(ascii) },
+-	{ "Product Options #3",       16, NULL, DEFINE_PRINT_UPDATE(ascii) },
+-	{ RESERVED_FIELDS,            64, NULL, eeprom_field_print_reserved,
+-						eeprom_field_update_ascii },
++	{ "Major Revision",            2, DEFINE_FIELD_FUNC(bin_ver) },
++	{ "Minor Revision",            2, DEFINE_FIELD_FUNC(bin_ver) },
++	{ "1st MAC Address",           6, DEFINE_FIELD_FUNC(mac) },
++	{ "2nd MAC Address",           6, DEFINE_FIELD_FUNC(mac) },
++	{ "Production Date",           4, DEFINE_FIELD_FUNC(date) },
++	{ "Serial Number",            12, FIELD_FUNC_SERIAL },
++	{ "3rd MAC Address (WIFI)",    6, DEFINE_FIELD_FUNC(mac) },
++	{ "4th MAC Address (Bluetooth)", 6, DEFINE_FIELD_FUNC(mac) },
++	{ "Layout Version",            1, DEFINE_FIELD_FUNC(bin) },
++	{ "CompuLab EEPROM ID",        3, DEFINE_FIELD_FUNC(bin) },
++	{ RESERVED_FIELDS,            80, DEFINE_FIELD_FUNC(reserved) },
++	{ "Product Name",             16, DEFINE_FIELD_FUNC(ascii) },
++	{ "Product Options #1",       16, DEFINE_FIELD_FUNC(ascii) },
++	{ "Product Options #2",       16, DEFINE_FIELD_FUNC(ascii) },
++	{ "Product Options #3",       16, DEFINE_FIELD_FUNC(ascii) },
++	{ RESERVED_FIELDS,            64, FIELD_FUNC_RES_LAST },
++};
++
++struct eeprom_field layout_v4[21] = {
++	{ "Major Revision",            2, DEFINE_FIELD_FUNC(bin_ver) },
++	{ "Minor Revision",            2, DEFINE_FIELD_FUNC(bin_ver) },
++	{ "1st MAC Address",           6, DEFINE_FIELD_FUNC(mac) },
++	{ "2nd MAC Address",           6, DEFINE_FIELD_FUNC(mac) },
++	{ "Production Date",           4, DEFINE_FIELD_FUNC(date) },
++	{ "Serial Number",            12, FIELD_FUNC_SERIAL },
++	{ "3rd MAC Address (WIFI)",    6, DEFINE_FIELD_FUNC(mac) },
++	{ "4th MAC Address (Bluetooth)", 6, DEFINE_FIELD_FUNC(mac) },
++	{ "Layout Version",            1, DEFINE_FIELD_FUNC(bin) },
++	{ "CompuLab EEPROM ID",        3, DEFINE_FIELD_FUNC(bin) },
++	{ "5th MAC Address",           6, DEFINE_FIELD_FUNC(mac) },
++	{ "6th MAC Address",           6, DEFINE_FIELD_FUNC(mac) },
++	{ RESERVED_FIELDS,             4, DEFINE_FIELD_FUNC(reserved) },
++	{ RESERVED_FIELDS,            64, DEFINE_FIELD_FUNC(reserved) },
++	{ "Product Name",             16, DEFINE_FIELD_FUNC(ascii) },
++	{ "Product Options #1",       16, DEFINE_FIELD_FUNC(ascii) },
++	{ "Product Options #2",       16, DEFINE_FIELD_FUNC(ascii) },
++	{ "Product Options #3",       16, DEFINE_FIELD_FUNC(ascii) },
++	{ "Product Options #4",       16, DEFINE_FIELD_FUNC(ascii) },
++	{ "Product Options #5",       16, DEFINE_FIELD_FUNC(ascii) },
++	{ RESERVED_FIELDS,            32, DEFINE_FIELD_FUNC(reserved) },
+ };
+ 
+ void eeprom_layout_assign(struct eeprom_layout *layout, int layout_version)
+@@ -489,6 +561,10 @@ void eeprom_layout_assign(struct eeprom_layout *layout, int layout_version)
+ 		layout->fields = layout_v3;
+ 		layout->num_of_fields = ARRAY_SIZE(layout_v3);
+ 		break;
++	case LAYOUT_VERSION_VER4:
++		layout->fields = layout_v4;
++		layout->num_of_fields = ARRAY_SIZE(layout_v4);
++		break;
+ 	default:
+ 		__eeprom_layout_assign(layout, layout_version);
+ 	}
+@@ -504,6 +580,8 @@ int eeprom_parse_layout_version(char *str)
+ 		return LAYOUT_VERSION_VER2;
+ 	else if (!strcmp(str, "v3"))
+ 		return LAYOUT_VERSION_VER3;
++	else if (!strcmp(str, "v4"))
++		return LAYOUT_VERSION_VER4;
+ 	else
+ 		return LAYOUT_VERSION_UNRECOGNIZED;
+ }
+@@ -518,6 +596,8 @@ int eeprom_layout_detect(unsigned char *data)
+ 		return LAYOUT_VERSION_VER2;
+ 	case 3:
+ 		return LAYOUT_VERSION_VER3;
++	case 4 ... 0x1f:
++		return LAYOUT_VERSION_VER4;
+ 	}
+ 
+ 	if (data[EEPROM_LAYOUT_VER_OFFSET] >= 0x20)
+diff --git a/board/compulab/common/eeprom.h b/board/compulab/common/eeprom.h
+index c0b4739ea2..ece826399d 100644
+--- a/board/compulab/common/eeprom.h
++++ b/board/compulab/common/eeprom.h
+@@ -11,7 +11,12 @@
+ #define _EEPROM_
+ #include <errno.h>
+ 
+-#ifdef CONFIG_SYS_I2C
++#if defined(CONFIG_SYS_I2C) || defined(CONFIG_DM_I2C)
++#ifdef CONFIG_CMD_EEPROM_LAYOUT
++int cl_eeprom_layout_setup(struct eeprom_layout *layout, uchar *eeprom_buf,
++			   int layout_version, uint eeprom_bus,
++			   uint8_t eeprom_addr);
++#endif /* CONFIG_CMD_EEPROM_LAYOUT */
+ int cl_eeprom_read_mac_addr(uchar *buf, uint eeprom_bus);
+ u32 cl_eeprom_get_board_rev(uint eeprom_bus);
+ int cl_eeprom_get_product_name(uchar *buf, uint eeprom_bus);
+diff --git a/board/compulab/common/omap3_display.c b/board/compulab/common/omap3_display.c
+index ed2077e361..61707f5b90 100644
+--- a/board/compulab/common/omap3_display.c
++++ b/board/compulab/common/omap3_display.c
+@@ -400,7 +400,7 @@ void lcd_ctrl_init(void *lcdbase)
+ {
+ 	struct prcm *prcm = (struct prcm *)PRCM_BASE;
+ 	char *custom_lcd;
+-	char *displaytype = env_get("displaytype");
++	char *displaytype = getenv("displaytype");
+ 
+ 	if (displaytype == NULL)
+ 		return;
+@@ -408,7 +408,7 @@ void lcd_ctrl_init(void *lcdbase)
+ 	lcd_def = env_parse_displaytype(displaytype);
+ 	/* If we did not recognize the preset, check if it's an env variable */
+ 	if (lcd_def == NONE) {
+-		custom_lcd = env_get(displaytype);
++		custom_lcd = getenv(displaytype);
+ 		if (custom_lcd == NULL || parse_customlcd(custom_lcd) < 0)
+ 			return;
+ 	}
+diff --git a/cmd/eeprom.c b/cmd/eeprom.c
+index c61b396a62..7630510e67 100644
+--- a/cmd/eeprom.c
++++ b/cmd/eeprom.c
+@@ -23,6 +23,7 @@
+ #include <common.h>
+ #include <config.h>
+ #include <command.h>
++#include <dm.h>
+ #include <i2c.h>
+ #include <eeprom_layout.h>
+ 
+@@ -60,6 +61,59 @@
+ #endif
+ #endif
+ 
++static int cur_busnum __attribute__((section(".data")));
++
++static int i2c_set_bus_num(unsigned int bus)
++{
++	cur_busnum = bus;
++	return 0;
++}
++
++static int i2c_compat_get_device(uint chip_addr, int alen,
++				 struct udevice **devp)
++{
++	struct dm_i2c_chip *chip;
++	int ret;
++
++	ret = i2c_get_chip_for_busnum(cur_busnum, chip_addr, alen, devp);
++	if (ret)
++		return ret;
++	chip = dev_get_parent_platdata(*devp);
++	if (chip->offset_len != alen) {
++		printf("I2C chip %x: requested alen %d does not match chip offset_len %d\n",
++		       chip_addr, alen, chip->offset_len);
++		return -EADDRNOTAVAIL;
++	}
++
++	return 0;
++}
++
++int i2c_read(uint8_t chip_addr, unsigned int addr, int alen, uint8_t *buffer,
++	     int len)
++{
++	struct udevice *dev;
++	int ret;
++
++	ret = i2c_compat_get_device(chip_addr, alen, &dev);
++	if (ret)
++		return ret;
++
++	return dm_i2c_read(dev, addr, buffer, len);
++}
++
++int i2c_write(uint8_t chip_addr, unsigned int addr, int alen, uint8_t *buffer,
++	      int len)
++{
++	struct udevice *dev;
++	int ret;
++
++	ret = i2c_compat_get_device(chip_addr, alen, &dev);
++	if (ret)
++		return ret;
++
++	return dm_i2c_write(dev, addr, buffer, len);
++}
++
+ __weak int eeprom_write_enable(unsigned dev_addr, int state)
+ {
+ 	return 0;
+@@ -324,6 +378,7 @@ static int eeprom_execute_command(enum eeprom_action action, int i2c_bus,
+ 
+ #ifdef CONFIG_CMD_EEPROM_LAYOUT
+ 	rcode = eeprom_read(i2c_addr, 0, eeprom_buf, CONFIG_SYS_EEPROM_SIZE);
++
+ 	if (rcode < 0)
+ 		return rcode;
+ 
+diff --git a/common/eeprom/eeprom_field.c b/common/eeprom/eeprom_field.c
+index 7f095a64a2..decda0b81a 100644
+--- a/common/eeprom/eeprom_field.c
++++ b/common/eeprom/eeprom_field.c
+@@ -12,7 +12,7 @@
+ #include <eeprom_field.h>
+ 
+ static void __eeprom_field_print_bin(const struct eeprom_field *field,
+-				     char *delimiter, bool reverse)
++				     uchar *fbuf, char *delimiter, bool reverse)
+ {
+ 	int i;
+ 	int from = reverse ? field->size - 1 : 0;
+@@ -20,12 +20,12 @@ static void __eeprom_field_print_bin(const struct eeprom_field *field,
+ 
+ 	printf(PRINT_FIELD_SEGMENT, field->name);
+ 	for (i = from; i != to; reverse ? i-- : i++)
+-		printf("%02x%s", field->buf[i], delimiter);
++		printf("%02x%s", fbuf[i], delimiter);
+ 
+-	printf("%02x\n", field->buf[i]);
++	printf("%02x\n", fbuf[i]);
+ }
+ 
+-static int __eeprom_field_update_bin(struct eeprom_field *field,
++static int __eeprom_field_update_bin(struct eeprom_field *field, uchar *fbuf,
+ 				     const char *value, bool reverse)
+ {
+ 	int len = strlen(value);
+@@ -37,7 +37,7 @@ static int __eeprom_field_update_bin(struct eeprom_field *field,
+ 	if (len > field->size * 2)
+ 		return -1;
+ 
+-	memset(field->buf, 0, field->size);
++	memset(fbuf, 0, field->size);
+ 
+ 	/* i - string iterator, j - buf iterator */
+ 	for (j = 0; j < field->size; j++) {
+@@ -60,7 +60,7 @@ static int __eeprom_field_update_bin(struct eeprom_field *field,
+ 		if (*endptr != '\0' || byte < 0)
+ 			return -1;
+ 
+-		field->buf[j] = byte;
++		fbuf[j] = byte;
+ 		i = reverse ? i - 2 : i + 2;
+ 	}
+ 
+@@ -68,7 +68,8 @@ static int __eeprom_field_update_bin(struct eeprom_field *field,
+ }
+ 
+ static int __eeprom_field_update_bin_delim(struct eeprom_field *field,
+-					   char *value, char *delimiter)
++					   uchar *fbuf, char *value,
++					   char *delimiter)
+ {
+ 	int count = 0;
+ 	int i, val;
+@@ -93,7 +94,7 @@ static int __eeprom_field_update_bin_delim(struct eeprom_field *field,
+ 			return -1;
+ 
+ 		/* here we assume that each tok is no more than byte long */
+-		field->buf[i] = (unsigned char)val;
++		fbuf[i] = (unsigned char)val;
+ 		tok = strtok(NULL, delimiter);
+ 	}
+ 
+@@ -109,21 +110,46 @@ static int __eeprom_field_update_bin_delim(struct eeprom_field *field,
+  *      Field Name       0102030405060708090a
+  *
+  * @field:	an initialized field to print
++ * @fbuf:	field buffer
+  */
+-void eeprom_field_print_bin(const struct eeprom_field *field)
++void eeprom_field_print_bin(const struct eeprom_field *field, uchar *fbuf)
+ {
+-	__eeprom_field_print_bin(field, "", false);
++	__eeprom_field_print_bin(field, fbuf, "", false);
+ }
+ 
+ /**
+  * eeprom_field_update_bin() - Update field with new data in binary form
+  *
+  * @field:	an initialized field
++ * @fbuf:	field buffer
+  * @value:	a string of values (i.e. "10b234a")
+  */
+-int eeprom_field_update_bin(struct eeprom_field *field, char *value)
++int eeprom_field_update_bin(struct eeprom_field *field, uchar *fbuf,
++			    char *value)
+ {
+-	return __eeprom_field_update_bin(field, value, false);
++	return __eeprom_field_update_bin(field, fbuf, value, false);
++}
++
++/**
++ * eeprom_field_read_bin() - Read field data in binary form
++ *
++ * @field:     an initialized field
++ * @fbuf:      field buffer
++ * @buf:       read buffer
++ * @buf_size:  read buffer size
++ */
++int eeprom_field_read_bin(const struct eeprom_field *field, uchar *fbuf,
++                         uchar *buf, int buf_size)
++{
++	memset(buf, 0, buf_size);
++	if (field->size <= 0)
++		return 0;
++	if (field->size > buf_size)
++		memcpy(buf, fbuf, buf_size);
++	else
++		memcpy(buf, fbuf, field->size);
++
++	return 0;
+ }
+ 
+ /**
+@@ -131,11 +157,13 @@ int eeprom_field_update_bin(struct eeprom_field *field, char *value)
+  *				    binary form
+  *
+  * @field:	an initialized field
++ * @fbuf:	field buffer
+  * @value:	a space delimited string of byte values (i.e. "1 02 3 0x4")
+  */
+-int eeprom_field_update_reserved(struct eeprom_field *field, char *value)
++int eeprom_field_update_reserved(struct eeprom_field *field, uchar *fbuf,
++				 char *value)
+ {
+-	return __eeprom_field_update_bin_delim(field, value, " ");
++	return __eeprom_field_update_bin_delim(field, fbuf, value, " ");
+ }
+ 
+ /**
+@@ -151,10 +179,11 @@ int eeprom_field_update_reserved(struct eeprom_field *field, char *value)
+  *      Field Name      0a090807060504030201
+  *
+  * @field:	an initialized field to print
++ * @fbuf:	field buffer
+  */
+-void eeprom_field_print_bin_rev(const struct eeprom_field *field)
++void eeprom_field_print_bin_rev(const struct eeprom_field *field, uchar *fbuf)
+ {
+-	__eeprom_field_print_bin(field, "", true);
++	__eeprom_field_print_bin(field, fbuf, "", true);
+ }
+ 
+ /**
+@@ -166,11 +195,34 @@ void eeprom_field_print_bin_rev(const struct eeprom_field *field)
+  * "3412" will be written to the field.
+  *
+  * @field:	an initialized field
++ * @fbuf:	field buffer
+  * @value:	a string of byte values
+  */
+-int eeprom_field_update_bin_rev(struct eeprom_field *field, char *value)
++int eeprom_field_update_bin_rev(struct eeprom_field *field, uchar *fbuf,
++				char *value)
++{
++	return __eeprom_field_update_bin(field, fbuf, value, true);
++}
++
++/**
++ * eeprom_field_read_rev() - Read reversed binary data
++ *
++ * @field:     an initialized field
++ * @fbuf:      field buffer
++ * @buf:       read buffer
++ * @buf_size:  read buffer size
++ */
++int eeprom_field_read_rev(const struct eeprom_field *field, uchar *fbuf,
++			  uchar *buf, int buf_size)
+ {
+-	return __eeprom_field_update_bin(field, value, true);
++	int i;
++
++	memset(buf, 0, buf_size);
++
++	for (i = field->size - 1; i >= 0; i--, buf++)
++		*buf = fbuf[i];
++
++	return 0;
+ }
+ 
+ /**
+@@ -182,10 +234,12 @@ int eeprom_field_update_bin_rev(struct eeprom_field *field, char *value)
+  *      Field Name     01:02:03:04:05:06
+  *
+  * @field:	an initialized field to print
++ * @fbuf:	field buffer
+  */
+-void eeprom_field_print_mac(const struct eeprom_field *field)
++void eeprom_field_print_mac(const struct eeprom_field *field, uchar *fbuf)
++
+ {
+-	__eeprom_field_print_bin(field, ":", false);
++	__eeprom_field_print_bin(field, fbuf, ":", false);
+ }
+ 
+ /**
+@@ -193,42 +247,47 @@ void eeprom_field_print_mac(const struct eeprom_field *field)
+  *			       data
+  *
+  * @field:	an initialized field
++ * @fbuf:	field buffer
+  * @value:	a colon delimited string of byte values (i.e. "1:02:3:ff")
+  */
+-int eeprom_field_update_mac(struct eeprom_field *field, char *value)
++int eeprom_field_update_mac(struct eeprom_field *field, uchar *fbuf,
++			    char *value)
+ {
+-	return __eeprom_field_update_bin_delim(field, value, ":");
++	return __eeprom_field_update_bin_delim(field, fbuf, value, ":");
+ }
+ 
+ /**
+  * eeprom_field_print_ascii() - print a field which contains ASCII data
+  * @field:	an initialized field to print
++ * @fbuf:	field buffer
+  */
+-void eeprom_field_print_ascii(const struct eeprom_field *field)
++void eeprom_field_print_ascii(const struct eeprom_field *field, uchar *fbuf)
+ {
+ 	char format[8];
+ 
+ 	sprintf(format, "%%.%ds\n", field->size);
+ 	printf(PRINT_FIELD_SEGMENT, field->name);
+-	printf(format, field->buf);
++	printf(format, fbuf);
+ }
+ 
+ /**
+  * eeprom_field_update_ascii() - Update field with new data in ASCII form
+  * @field:	an initialized field
++ * @fbuf:	field buffer
+  * @value:	the new string data
+  *
+  * Returns 0 on success, -1 of failure (new string too long).
+  */
+-int eeprom_field_update_ascii(struct eeprom_field *field, char *value)
++int eeprom_field_update_ascii(struct eeprom_field *field, uchar *fbuf,
++			      char *value)
+ {
+ 	if (strlen(value) >= field->size) {
+ 		printf("%s: new data too long\n", field->name);
+ 		return -1;
+ 	}
+ 
+-	strncpy((char *)field->buf, value, field->size - 1);
+-	field->buf[field->size - 1] = '\0';
++	strncpy((char *)fbuf, value, field->size - 1);
++	fbuf[field->size - 1] = '\0';
+ 
+ 	return 0;
+ }
+@@ -242,8 +301,9 @@ int eeprom_field_update_ascii(struct eeprom_field *field, char *value)
+  *      Reserved fields              (64 bytes)
+  *
+  * @field:	an initialized field to print
++ * @fbuf:	field buffer
+  */
+-void eeprom_field_print_reserved(const struct eeprom_field *field)
++void eeprom_field_print_reserved(const struct eeprom_field *field, uchar *fbuf)
+ {
+ 	printf(PRINT_FIELD_SEGMENT, "Reserved fields\t");
+ 	printf("(%d bytes)\n", field->size);
+diff --git a/common/eeprom/eeprom_layout.c b/common/eeprom/eeprom_layout.c
+index c05923328a..3d8b4ec1b6 100644
+--- a/common/eeprom/eeprom_layout.c
++++ b/common/eeprom/eeprom_layout.c
+@@ -15,8 +15,8 @@
+ #define NO_LAYOUT_FIELDS	"Unknown layout. Dumping raw data\n"
+ 
+ struct eeprom_field layout_unknown[1] = {
+-	{ NO_LAYOUT_FIELDS, 256, NULL, eeprom_field_print_bin,
+-				       eeprom_field_update_bin },
++	{ NO_LAYOUT_FIELDS, 256, eeprom_field_print_bin,
++	  eeprom_field_update_bin },
+ };
+ 
+ /*
+@@ -52,9 +52,10 @@ static void eeprom_layout_print(const struct eeprom_layout *layout)
+ {
+ 	int i;
+ 	struct eeprom_field *fields = layout->fields;
++	uchar *fbuf = layout->data;
+ 
+-	for (i = 0; i < layout->num_of_fields; i++)
+-		fields[i].print(&fields[i]);
++	for (i = 0; i < layout->num_of_fields; fbuf += fields[i++].size)
++		fields[i].print(&fields[i], fbuf);
+ }
+ 
+ /*
+@@ -70,6 +71,7 @@ static int eeprom_layout_update_field(struct eeprom_layout *layout,
+ {
+ 	int i, err;
+ 	struct eeprom_field *fields = layout->fields;
++	uchar *fbuf = layout->data;
+ 
+ 	if (new_data == NULL)
+ 		return 0;
+@@ -77,12 +79,12 @@ static int eeprom_layout_update_field(struct eeprom_layout *layout,
+ 	if (field_name == NULL)
+ 		return -1;
+ 
+-	for (i = 0; i < layout->num_of_fields; i++) {
++	for (i = 0; i < layout->num_of_fields; fbuf += fields[i++].size) {
+ 		if (fields[i].name == RESERVED_FIELDS ||
+ 		    strcmp(fields[i].name, field_name))
+ 			continue;
+ 
+-		err = fields[i].update(&fields[i], new_data);
++		err = fields[i].update(&fields[i], fbuf, new_data);
+ 		if (err)
+ 			printf("Invalid data for field %s\n", field_name);
+ 
+@@ -95,6 +97,42 @@ static int eeprom_layout_update_field(struct eeprom_layout *layout,
+ }
+ 
+ /*
++ * eeprom_layout_read_field() - read a single field from the layout data
++ * @layout:    A pointer to an existing struct layout.
++ * @field_name:        The name of the field to update.
++ * @buf:       Read data buffer.
++ * @buf_size:  Read data buffer size.
++ *
++ * Returns: 0 on success, negative error value on failure.
++ */
++static int eeprom_layout_read_field(struct eeprom_layout *layout,
++				    char *field_name, uchar *buf, int buf_size)
++{
++       int i, err;
++       struct eeprom_field *fields = layout->fields;
++       uchar *fbuf = layout->data;
++
++       if ((field_name == NULL) || (buf == NULL) || (buf_size <= 0))
++               return -1;
++
++	for (i = 0; i < layout->num_of_fields; fbuf += fields[i++].size) {
++		if (fields[i].name == RESERVED_FIELDS ||
++		    strcmp(fields[i].name, field_name))
++			continue;
++
++		err = fields[i].read(&fields[i], fbuf, buf, buf_size);
++		if (err)
++			printf("Field %s, read error\n", field_name);
++
++		return err;
++	}
++
++	printf("No such field '%s'\n", field_name);
++
++	return -1;
++}
++
++/*
+  * eeprom_layout_setup() - setup layout struct with the layout data and
+  *			   metadata as dictated by layout_version
+  * @layout:	A pointer to an existing struct layout.
+@@ -105,8 +143,6 @@ static int eeprom_layout_update_field(struct eeprom_layout *layout,
+ void eeprom_layout_setup(struct eeprom_layout *layout, unsigned char *buf,
+ 			 unsigned int buf_size, int layout_version)
+ {
+-	int i;
+-
+ 	if (layout_version == LAYOUT_VERSION_AUTODETECT)
+ 		layout->layout_version = eeprom_layout_detect(buf);
+ 	else
+@@ -114,12 +150,8 @@ void eeprom_layout_setup(struct eeprom_layout *layout, unsigned char *buf,
+ 
+ 	eeprom_layout_assign(layout, layout_version);
+ 	layout->data = buf;
+-	for (i = 0; i < layout->num_of_fields; i++) {
+-		layout->fields[i].buf = buf;
+-		buf += layout->fields[i].size;
+-	}
+-
+ 	layout->data_size = buf_size;
+ 	layout->print = eeprom_layout_print;
+ 	layout->update = eeprom_layout_update_field;
++	layout->read = eeprom_layout_read_field;
+ }
+diff --git a/configs/cl-som-imx8_defconfig b/configs/cl-som-imx8_defconfig
+index e4cc09d227..379dfe798b 100644
+--- a/configs/cl-som-imx8_defconfig
++++ b/configs/cl-som-imx8_defconfig
+@@ -70,3 +70,11 @@ CONFIG_LED_STATUS_BOARD_SPECIFIC=y
+ CONFIG_LED_STATUS0=y
+ CONFIG_LED_STATUS_BIT=12
+ CONFIG_LED_STATUS_STATE=2
++
++CONFIG_CMD_EEPROM=y
++CONFIG_I2C_EEPROM=y
++CONFIG_SYS_I2C_EEPROM_ADDR_LEN="1"
++CONFIG_EEPROM_LAYOUT_HELP_STRING="v2, v3, v4"
++CONFIG_CMD_EEPROM_LAYOUT=y
++CONFIG_DM_I2C=y
++
+diff --git a/include/configs/cl-som-imx8.h b/include/configs/cl-som-imx8.h
+index 7be283768a..b991ef9fcd 100644
+--- a/include/configs/cl-som-imx8.h
++++ b/include/configs/cl-som-imx8.h
+@@ -272,4 +272,13 @@
+ #include "cl-som-imx8_android.h"
+ #endif
+ 
++/* EEPROM */
++#define CONFIG_ENV_EEPROM_IS_ON_I2C
++#define CONFIG_SYS_EEPROM_PAGE_WRITE_BITS      4
++#define CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS  5
++
++#define CONFIG_SYS_I2C_EEPROM_ADDR_LEN	1
++#define CONFIG_SYS_EEPROM_SIZE		256
++#define CONFIG_SYS_I2C_EEPROM_BUS	1
++
+ #endif
+diff --git a/include/eeprom_field.h b/include/eeprom_field.h
+index 94e259ff73..aff91a31dc 100644
+--- a/include/eeprom_field.h
++++ b/include/eeprom_field.h
+@@ -15,25 +15,36 @@
+ struct eeprom_field {
+ 	char *name;
+ 	int size;
+-	unsigned char *buf;
+ 
+-	void (*print)(const struct eeprom_field *eeprom_field);
+-	int (*update)(struct eeprom_field *eeprom_field, char *value);
++	void (*print)(const struct eeprom_field *eeprom_field, uchar *fbuf);
++	int (*update)(struct eeprom_field *eeprom_field, uchar *fbuf,
++		      char *value);
++	int (*read)(const struct eeprom_field *field, uchar *fbuf, uchar *buf,
++		    int buf_size);
+ };
+ 
+-void eeprom_field_print_bin(const struct eeprom_field *field);
+-int eeprom_field_update_bin(struct eeprom_field *field, char *value);
+-
+-void eeprom_field_print_bin_rev(const struct eeprom_field *field);
+-int eeprom_field_update_bin_rev(struct eeprom_field *field, char *value);
+-
+-void eeprom_field_print_mac(const struct eeprom_field *field);
+-int eeprom_field_update_mac(struct eeprom_field *field, char *value);
+-
+-void eeprom_field_print_ascii(const struct eeprom_field *field);
+-int eeprom_field_update_ascii(struct eeprom_field *field, char *value);
+-
+-void eeprom_field_print_reserved(const struct eeprom_field *field);
+-int eeprom_field_update_reserved(struct eeprom_field *field, char *value);
++void eeprom_field_print_bin(const struct eeprom_field *field, uchar *fbuf);
++int eeprom_field_update_bin(struct eeprom_field *field, uchar *fbuf,
++			    char *value);
++int eeprom_field_read_bin(const struct eeprom_field *field, uchar *fbuf,
++			  uchar *buf, int buf_size);
++
++void eeprom_field_print_bin_rev(const struct eeprom_field *field, uchar *fbuf);
++int eeprom_field_update_bin_rev(struct eeprom_field *field, uchar *fbuf,
++				char *value);
++int eeprom_field_read_rev(const struct eeprom_field *field, uchar *fbuf,
++			  uchar *buf, int buf_size);
++
++void eeprom_field_print_mac(const struct eeprom_field *field, uchar *fbuf);
++int eeprom_field_update_mac(struct eeprom_field *field, uchar *fbuf,
++			    char *value);
++
++void eeprom_field_print_ascii(const struct eeprom_field *field, uchar *fbuf);
++int eeprom_field_update_ascii(struct eeprom_field *field, uchar *fbuf,
++			      char *value);
++
++void eeprom_field_print_reserved(const struct eeprom_field *field, uchar *fbuf);
++int eeprom_field_update_reserved(struct eeprom_field *field, uchar *fbuf,
++				 char *value);
+ 
+ #endif
+diff --git a/include/eeprom_layout.h b/include/eeprom_layout.h
+index 459b99d861..664c99c293 100644
+--- a/include/eeprom_layout.h
++++ b/include/eeprom_layout.h
+@@ -23,6 +23,8 @@ struct eeprom_layout {
+ 	void (*print)(const struct eeprom_layout *eeprom_layout);
+ 	int (*update)(struct eeprom_layout *eeprom_layout, char *field_name,
+ 		      char *new_data);
++	int (*read)(struct eeprom_layout *eeprom_layout, char *field_name,
++			uchar *buf, int buf_size);
+ };
+ 
+ void eeprom_layout_setup(struct eeprom_layout *layout, unsigned char *buf,
+-- 
+2.11.0
+

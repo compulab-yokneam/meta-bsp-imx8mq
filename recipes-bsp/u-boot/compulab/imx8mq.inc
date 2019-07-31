@@ -16,5 +16,6 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0014-cl-som-imx8-defconfig-Enable-OPTEE.patch \
 	file://0015-cl-som-imx8-defconfig-Disable-TMU.patch \
 	file://0016-CL-SOM-iMX8-Enable-LED.patch \
+	file://0017-Enable-eeprom-cmd.patch \
 	file://cl-som-imx8_defconfig \
 "
