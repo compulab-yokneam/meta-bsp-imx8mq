@@ -10,10 +10,5 @@ do_configure_append_cl-som-imx8 () {
 	cp -rfv ${WORKDIR}/compulab.bmp ${S}/tools/logos/
 }
 
-KERNEL_MODULE_AUTOLOAD += "goodix"
-
-COMPATIBLE_MACHINE = "(cl-som-imx8)"
-
-
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 COMPATIBLE_MACHINE = "(cl-som-imx8)"
