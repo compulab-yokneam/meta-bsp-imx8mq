@@ -25,8 +25,7 @@ cd imx8mq
 * Download CompuLab BSP
 <pre>
 git clone -b master https://github.com/compulab-yokneam/meta-compulab-bsp.git
-export BSP=$(pwd)/meta-compulab-bsp
-export PATCHES=${BSP}/meta-bsp-imx8mq/recipes-kernel/linux/compulab/imx8mq
+export PATCHES=$(pwd)/meta-bsp-imx8mq/recipes-kernel/linux/compulab/imx8mq
 </pre>
 
 # CompuLab Linux Kernel setup
