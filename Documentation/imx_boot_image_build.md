@@ -28,7 +28,7 @@ export SRC_ROOT=$(pwd)
 <pre>
 git clone -b master https://github.com/compulab-yokneam/meta-bsp-imx8mq.git
 export BSP=$(pwd)/meta-bsp-imx8mq
-export PATCHES=${BSP}q/recipes-bsp/u-boot/compulab/imx8mq
+export PATCHES=${BSP}/recipes-bsp/u-boot/compulab/imx8mq
 </pre>
 
 ## Mkimage Setup
