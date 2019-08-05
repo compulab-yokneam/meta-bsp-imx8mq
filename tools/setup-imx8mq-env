@@ -4,8 +4,13 @@ EULA=1
 
 . fsl-setup-release.sh $@
 
+if [[ -z ${DEVENV} ]];then
 declare -a ENVIRONMENT=('../sources/meta-bsp-imx8mq/tools/setup-compulab-env \
 			../sources/meta-bsp-imx8mq/tools/setup-user-env')
+else
+# Use all defaults w/out Chromium for creating the build environment
+declare -a ENVIRONMENT=('../sources/meta-bsp-imx8mq/tools/setup-compulab-env')
+fi
 
 for env in ${ENVIRONMENT[@]};do
 [ -f ${env} ] && FORCE=Yes source ${env}

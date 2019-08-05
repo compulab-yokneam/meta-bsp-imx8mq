@@ -110,7 +110,8 @@ cat << eom
 eom
 
 mod_bblayer
-mod_local
+# Don't touch the conf/local.conf if The CompuLab Build environment is in use
+[[ -z ${DEVENV} ]] && mod_local
 add_bbmask
 
 cat << eom
