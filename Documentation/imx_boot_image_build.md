@@ -47,14 +47,14 @@ git -C imx-atf checkout rel_imx_4.14.98_2.0.0_ga
 * Make bl31.bin
 <pre>
 make -C imx-atf PLAT=imx8mq bl31
-cp -v imx-atf/build/imx8mm/release/bl31.bin ${SRC_ROOT}/imx-mkimage/iMX8M/
+cp -v imx-atf/build/imx8mq/release/bl31.bin ${SRC_ROOT}/imx-mkimage/iMX8M/
 </pre>
 
 ## Firmware iMX setup
 Download the firmware-imx file from:
 <pre>
 wget http://www.freescale.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-8.1.bin
-bash firmware-imx-8.1.bin --auto-accept
+bash -x firmware-imx-8.1.bin --auto-accept
 cp -v $(find firmware* | awk '/train|hdmi_imx8|dp_imx8/' ORS=" ") ${SRC_ROOT}/imx-mkimage/iMX8M/
 </pre>
 
