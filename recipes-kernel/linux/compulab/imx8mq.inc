@@ -21,5 +21,7 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0019-cl-som-imx8-dts-Change-mipi-dcss-clock-settings.patch \
 	file://0020-cl-som-imx8-defconfig-Update-config.patch \
 	file://0021-cl-som-imx8-dts-Fix-the-csi-assigned-clock-rate.patch \
+	file://0022-cl-som-imx8-dts-Changed-sn65dsi83-clock-to-a-support.patch \
+	file://0023-cl-som-imx8-dts-Fix-the-dcss-assigned-clocks.patch \
 	file://defconfig \
 "

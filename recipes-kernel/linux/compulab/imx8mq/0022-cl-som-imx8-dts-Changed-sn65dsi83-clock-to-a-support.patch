@@ -1,0 +1,35 @@
+From 8a88560f124259725f74c31725f4e5b741d69ef1 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Fri, 23 Aug 2019 09:00:34 +0300
+Subject: [PATCH 22/23] cl-som-imx8: dts: Changed sn65dsi83 clock to a
+ supported 74250 one.
+
+Required in order to pass the nwl_dsi_bridge_mode_valid() validation
+that compares the bridge/connector->clock with the list of the
+valid_clocks[].
+
+Added by NXP commit:
+a5eec7c52105fe73274074d27d7b07dda2c748cf
+MLK-17537-6: drm/bridge: nwl-dsi: force valid clocks
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm64/boot/dts/compulab/compulab-imx8mq-lvds-mipi.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/compulab/compulab-imx8mq-lvds-mipi.dtsi b/arch/arm64/boot/dts/compulab/compulab-imx8mq-lvds-mipi.dtsi
+index d2b695e..e34c55a 100644
+--- a/arch/arm64/boot/dts/compulab/compulab-imx8mq-lvds-mipi.dtsi
++++ b/arch/arm64/boot/dts/compulab/compulab-imx8mq-lvds-mipi.dtsi
+@@ -38,7 +38,7 @@
+ 
+         display-timings {
+             lvds {
+-                clock-frequency = <62500000>;
++                clock-frequency = <74250000>;
+                 hactive = <1280>;
+                 vactive = <800>;
+                 hback-porch = <6>;
+-- 
+1.9.1
+
