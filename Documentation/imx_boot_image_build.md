@@ -65,7 +65,7 @@ git -C uboot-imx checkout rel_imx_4.14.98_2.0.0_ga
 git -C uboot-imx am ${PATCHES}/*.patch
 </pre>
 
-Set memory configuration:
+### Set memory configuration:
 
 * 1G - D1 module configuration option
 <pre>
