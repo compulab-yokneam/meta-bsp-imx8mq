@@ -24,5 +24,6 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0022-cl-som-imx8-dts-Changed-sn65dsi83-clock-to-a-support.patch \
 	file://0023-cl-som-imx8-dts-Fix-the-dcss-assigned-clocks.patch \
 	file://0024-cl-som-imx8-dts-Increase-lcdif-max-res-to-1920x1200.patch \
+	file://0025-cl-som-imx8-dts-Reduced-the-linux-cma-down-to-384M.patch \
 	file://defconfig \
 "
