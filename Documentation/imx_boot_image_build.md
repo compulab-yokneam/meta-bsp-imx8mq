@@ -26,7 +26,7 @@ export SRC_ROOT=$(pwd)
 
 * Download CompuLab BSP
 <pre>
-git clone -b master https://github.com/compulab-yokneam/meta-bsp-imx8mq.git
+git clone -b devel-2op-800 https://github.com/compulab-yokneam/meta-bsp-imx8mq.git
 export PATCHES=$(pwd)/meta-bsp-imx8mq/recipes-bsp/u-boot/compulab/imx8mq
 </pre>
 
