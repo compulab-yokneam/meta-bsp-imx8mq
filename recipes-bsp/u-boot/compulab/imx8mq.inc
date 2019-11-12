@@ -18,5 +18,7 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0016-CL-SOM-iMX8-Enable-LED.patch \
 	file://0017-Enable-eeprom-cmd.patch \
 	file://0018-cl-som-imx8-Fixed-the-PHYS_SDRAM_SIZE-value-for-1G-c.patch \
+	file://0019-lpddr4-Take-drate-from-the-dram_timing_info.patch \
+	file://0020-cl-som-imx8-ddr4-Make-lpddr4-work-on-800MHz.patch \
 	file://cl-som-imx8_defconfig \
 "
