@@ -1,0 +1,57 @@
+From 23793210346eed04fcc331c7459d735c2a837ef4 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Fri, 13 Sep 2019 22:51:24 +0300
+Subject: [PATCH 22/32] cl-som-imx8: envtools: Add print default fw_env.config
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ tools/env/fw_env_main.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/tools/env/fw_env_main.c b/tools/env/fw_env_main.c
+index d93a915..f4573e0 100644
+--- a/tools/env/fw_env_main.c
++++ b/tools/env/fw_env_main.c
+@@ -49,6 +49,7 @@ static struct option long_options[] = {
+ 	{"noheader", no_argument, NULL, 'n'},
+ 	{"lock", required_argument, NULL, 'l'},
+ 	{"version", no_argument, NULL, 'v'},
++	{"env", no_argument, NULL, 'e'},
+ 	{NULL, 0, NULL, 0}
+ };
+ 
+@@ -74,6 +75,7 @@ void usage_printenv(void)
+ #endif
+ 		" -n, --noheader       do not repeat variable name in output\n"
+ 		" -l, --lock           lock node, default:/var/lock\n"
++		" -e, --env            print default fw_env.config\n"
+ 		"\n");
+ }
+ 
+@@ -120,7 +122,7 @@ static void parse_common_args(int argc, char *argv[])
+ 	env_opts.config_file = CONFIG_FILE;
+ #endif
+ 
+-	while ((c = getopt_long(argc, argv, ":a:c:l:h:v", long_options, NULL)) !=
++	while ((c = getopt_long(argc, argv, ":a:c:l:h:v:e", long_options, NULL)) !=
+ 	       EOF) {
+ 		switch (c) {
+ #ifdef CONFIG_FILE
+@@ -139,6 +141,14 @@ static void parse_common_args(int argc, char *argv[])
+ 			fprintf(stderr, "Compiled with " U_BOOT_VERSION "\n");
+ 			exit(EXIT_SUCCESS);
+ 			break;
++		case 'e':
++#ifdef CONFIG_SYS_MMC_ENV_PART
++			fprintf(stderr, "/dev/mmcblk%dboot%d 0x%x 0x%x\n", CONFIG_SYS_MMC_ENV_DEV, CONFIG_SYS_MMC_ENV_PART-1, CONFIG_ENV_OFFSET, CONFIG_ENV_SIZE);
++#else
++			fprintf(stderr, "/dev/mmcblk%d 0x%x 0x%x\n", CONFIG_SYS_MMC_ENV_DEV, CONFIG_ENV_OFFSET, CONFIG_ENV_SIZE);
++#endif
++			exit(EXIT_SUCCESS);
++			break;
+ 		default:
+ 			/* ignore unknown options */
+ 			break;
+-- 
+1.9.1
+

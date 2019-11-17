@@ -1,0 +1,54 @@
+From c2847d21eadc9a9a5130cfd70704bbd65f769cf2 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Fri, 13 Sep 2019 22:50:06 +0300
+Subject: [PATCH 21/32] cl-som-imx8: env: Change the env device offset
+
+1) Save environment onto a boot partition if available.
+2) Move the environment to 4K offset.
+3) Increase the environment size up to 16K.
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ board/compulab/cl-som-imx8/cl-som-imx8.c | 8 ++++++++
+ include/configs/cl-som-imx8.h            | 5 +++--
+ 2 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/board/compulab/cl-som-imx8/cl-som-imx8.c b/board/compulab/cl-som-imx8/cl-som-imx8.c
+index 101a540..c88fe19 100644
+--- a/board/compulab/cl-som-imx8/cl-som-imx8.c
++++ b/board/compulab/cl-som-imx8/cl-som-imx8.c
+@@ -307,6 +307,14 @@ int board_mmc_get_env_dev(int devno)
+ 	return devno;
+ }
+ 
++uint mmc_get_env_part(struct mmc *mmc)
++{
++	if (mmc->part_support)
++		return CONFIG_SYS_MMC_ENV_PART;
++
++	return 0;
++}
++
+ int board_late_init(void)
+ {
+ 
+diff --git a/include/configs/cl-som-imx8.h b/include/configs/cl-som-imx8.h
+index a50106e..b861d6c 100644
+--- a/include/configs/cl-som-imx8.h
++++ b/include/configs/cl-som-imx8.h
+@@ -142,9 +142,10 @@
+         (CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
+ 
+ #define CONFIG_ENV_OVERWRITE
+-#define CONFIG_ENV_OFFSET               (64 * SZ_64K)
+-#define CONFIG_ENV_SIZE			0x1000
++#define CONFIG_ENV_OFFSET           0x1000
++#define CONFIG_ENV_SIZE             0x4000
+ #define CONFIG_SYS_MMC_ENV_DEV		0   /* USDHC1/eMMC */
++#define CONFIG_SYS_MMC_ENV_PART     1   /* boot0 area  */
+ #define CONFIG_MMCROOT			"/dev/mmcblk0p2"  /* USDHC1 */
+ 
+ /* Size of malloc() pool */
+-- 
+1.9.1
+

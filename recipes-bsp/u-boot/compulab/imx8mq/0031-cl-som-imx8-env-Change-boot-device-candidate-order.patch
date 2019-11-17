@@ -1,0 +1,26 @@
+From 7a262c199601b864015253b11360971417c91d75 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Fri, 15 Nov 2019 08:01:30 +0200
+Subject: [PATCH 31/32] cl-som-imx8: env: Change boot device candidate order
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ include/configs/cl-som-imx8.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/cl-som-imx8.h b/include/configs/cl-som-imx8.h
+index 0cce80f..24b45f6 100644
+--- a/include/configs/cl-som-imx8.h
++++ b/include/configs/cl-som-imx8.h
+@@ -127,7 +127,7 @@
+ 	"usb_pre=setenv iface usb; setenv dev 0; setenv rootdev /dev/sda2\0"	\
+ 
+ #define CONFIG_BOOTCOMMAND \
+-	"run usb_boot; setenv mmcdev 1; run mmc_boot; setenv mmcdev 0; run mmc_boot;"
++	"setenv mmcdev 1; run mmc_boot; run usb_boot; setenv mmcdev 0; run mmc_boot;"
+ 
+ /* Link Definitions */
+ #define CONFIG_LOADADDR			0x40480000
+-- 
+1.9.1
+

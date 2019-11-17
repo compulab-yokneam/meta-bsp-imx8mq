@@ -1,0 +1,79 @@
+From 3395b2f90856ded291e1e8ba84f2ce2cfe9a5a05 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Mon, 28 Oct 2019 20:06:03 +0200
+Subject: [PATCH 26/32] PHYS_SDRAM_SIZE: Return the correct size into the
+ imx8m_mem_map
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm/mach-imx/imx8m/soc.c            |  6 ++++++
+ board/compulab/cl-som-imx8/cl-som-imx8.c | 24 ++++++++++++------------
+ 2 files changed, 18 insertions(+), 12 deletions(-)
+
+diff --git a/arch/arm/mach-imx/imx8m/soc.c b/arch/arm/mach-imx/imx8m/soc.c
+index 6d8c22c..1b65e77 100644
+--- a/arch/arm/mach-imx/imx8m/soc.c
++++ b/arch/arm/mach-imx/imx8m/soc.c
+@@ -154,8 +154,14 @@ static struct mm_region imx8m_mem_map[] = {
+ 
+ struct mm_region *mem_map = imx8m_mem_map;
+ 
++__weak phys_size_t get_dram_size(void) {
++    return PHYS_SDRAM_SIZE;
++}
++
+ void enable_caches(void)
+ {
++	imx8m_mem_map[5].size = get_dram_size();
++
+ 	/* If OPTEE runs, remove OPTEE memory from MMU table to avoid speculative prefetch */
+ 	if (rom_pointer[1]) {
+ 		imx8m_mem_map[5].size -= rom_pointer[1];
+diff --git a/board/compulab/cl-som-imx8/cl-som-imx8.c b/board/compulab/cl-som-imx8/cl-som-imx8.c
+index e73bc63..1ead205 100644
+--- a/board/compulab/cl-som-imx8/cl-som-imx8.c
++++ b/board/compulab/cl-som-imx8/cl-som-imx8.c
+@@ -79,28 +79,28 @@ static phys_size_t imx8_ddr_size(void)
+     return dram_size;
+ }
+ 
+-int dram_init(void)
++phys_size_t get_effective_memsize(void)
+ {
+-    gd->ram_size = imx8_ddr_size();
+-    return 0;
++    return imx8_ddr_size();
+ }
+ 
+-void _dram_init_banksize(void)
+-
++int dram_init(void)
+ {
+-    gd->bd->bi_dram[0].start = PHYS_SDRAM;
+-    gd->bd->bi_dram[0].size = imx8_ddr_size();
++   gd->ram_size = imx8_ddr_size();
++   return 0;
+ }
+ 
+-phys_size_t get_effective_memsize(void)
++int dram_init_banksize(void)
+ {
+-    phys_size_t dram_size = imx8_ddr_size();
+-    if (dram_size > 0x80000000)
+-        return 0x80000000;
++    gd->bd->bi_dram[0].start = PHYS_SDRAM;
++    gd->bd->bi_dram[0].size = imx8_ddr_size();
+ 
+-    return dram_size;
++    return 0;
+ }
+ 
++phys_size_t get_dram_size(void) {
++    return imx8_ddr_size();
++}
+ #ifdef CONFIG_OF_BOARD_SETUP
+ int ft_board_setup(void *blob, bd_t *bd)
+ {
+-- 
+1.9.1
+

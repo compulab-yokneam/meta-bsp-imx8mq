@@ -1,0 +1,94 @@
+From dc2f6c45ae50bde65641d36e0b8dde0c7b5ddd33 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Sat, 28 Sep 2019 17:06:59 +0300
+Subject: [PATCH 24/32] cl-som-imx8: Add E/!E configuration discovery logics
+
+Introduced E/!E configuration discovery logics.
+1) Configures MDC/MDIO legs as GPIOs.
+2) Read values:
+ 1. E-cfg returns 1 for each leg.
+ 2. !E-cfg returns 0 for each leg.
+3) If the !E-cfg is discovered, then unset ethprime variable.
+4) It allows the boot script to decide how to proceed with the net boot.
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ board/compulab/cl-som-imx8/cl-som-imx8.c | 41 ++++++++++++++++++++++++++++++++
+ include/configs/cl-som-imx8.h            |  2 ++
+ 2 files changed, 43 insertions(+)
+
+diff --git a/board/compulab/cl-som-imx8/cl-som-imx8.c b/board/compulab/cl-som-imx8/cl-som-imx8.c
+index 31dda30..e73bc63 100644
+--- a/board/compulab/cl-som-imx8/cl-som-imx8.c
++++ b/board/compulab/cl-som-imx8/cl-som-imx8.c
+@@ -114,6 +114,41 @@ static iomux_v3_cfg_t const fec1_rst_pads[] = {
+ 	IMX8MQ_PAD_GPIO1_IO09__GPIO1_IO9 | MUX_PAD_CTRL(NO_PAD_CTRL),
+ };
+ 
++#define FEC_GPIO_16 IMX_GPIO_NR(1, 16)
++#define FEC_GPIO_17 IMX_GPIO_NR(1, 17)
++
++#ifdef CPL_NET_DISC_LOGICS
++static iomux_v3_cfg_t const fec1_default_pads[] = {
++	IMX8MQ_PAD_ENET_MDC__ENET_MDC | MUX_PAD_CTRL(NO_PAD_CTRL),
++	IMX8MQ_PAD_ENET_MDIO__ENET_MDIO | MUX_PAD_CTRL(NO_PAD_CTRL),
++};
++
++static iomux_v3_cfg_t const fec1_gpio_pads[] = {
++	IMX8MQ_PAD_ENET_MDC__GPIO1_IO16 | MUX_PAD_CTRL(NO_PAD_CTRL),
++	IMX8MQ_PAD_ENET_MDIO__GPIO1_IO17 | MUX_PAD_CTRL(NO_PAD_CTRL),
++};
++
++static int fec_status = 0;
++static int get_fec_status(int mode)
++{
++	int rc = 0;
++	if (mode) {
++		/* Configure straps pins as GPIOs */
++		imx_iomux_v3_setup_multiple_pads(fec1_gpio_pads, ARRAY_SIZE(fec1_gpio_pads));
++
++		gpio_request(FEC_GPIO_16, "fec_gpio_16");
++		gpio_request(FEC_GPIO_17, "fec_gpio_17");
++		rc += gpio_get_value(FEC_GPIO_16);
++		rc += gpio_get_value(FEC_GPIO_17);
++		fec_status = rc;
++
++		/* Restore the straps pins' configurations */
++		imx_iomux_v3_setup_multiple_pads(fec1_default_pads, ARRAY_SIZE(fec1_default_pads));
++	}
++	return fec_status;
++}
++#endif
++
+ static void setup_iomux_fec(void)
+ {
+ 	imx_iomux_v3_setup_multiple_pads(fec1_rst_pads, ARRAY_SIZE(fec1_rst_pads));
+@@ -165,6 +200,12 @@ static int setup_fec(void)
+ 
+ int board_phy_config(struct phy_device *phydev)
+ {
++
++#ifdef CPL_NET_DISC_LOGICS
++	if (!get_fec_status(1))
++		env_set("ethprime" , "");
++#endif
++
+ 	/* enable rgmii rxc skew and phy mode select to RGMII copper */
+ 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x1f);
+ 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x8);
+diff --git a/include/configs/cl-som-imx8.h b/include/configs/cl-som-imx8.h
+index b861d6c..96d7d99 100644
+--- a/include/configs/cl-som-imx8.h
++++ b/include/configs/cl-som-imx8.h
+@@ -210,6 +210,8 @@
+ 
+ #define CONFIG_OF_SYSTEM_SETUP
+ 
++#define CPL_NET_DISC_LOGICS
++
+ /* Framebuffer */
+ #ifdef CONFIG_VIDEO
+ #define CONFIG_VIDEO_IMXDCSS
+-- 
+1.9.1
+

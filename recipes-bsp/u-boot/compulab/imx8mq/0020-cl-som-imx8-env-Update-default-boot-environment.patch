@@ -1,0 +1,115 @@
+From 820db3fe0aa72c844485d31921f00ec0978505d2 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Fri, 13 Sep 2019 15:36:11 +0300
+Subject: [PATCH 20/32] cl-som-imx8: env: Update default boot environment
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ include/configs/cl-som-imx8.h | 77 +++++++++----------------------------------
+ 1 file changed, 15 insertions(+), 62 deletions(-)
+
+diff --git a/include/configs/cl-som-imx8.h b/include/configs/cl-som-imx8.h
+index b991ef9..a50106e 100644
+--- a/include/configs/cl-som-imx8.h
++++ b/include/configs/cl-som-imx8.h
+@@ -99,82 +99,35 @@
+ #define CONFIG_PHY_ATHEROS
+ #endif
+ 
+-#define CONFIG_MFG_ENV_SETTINGS \
+-	"mfgtool_args=setenv bootargs console=${console},${baudrate} " \
+-		"rdinit=/linuxrc " \
+-		"g_mass_storage.stall=0 g_mass_storage.removable=1 " \
+-		"g_mass_storage.idVendor=0x066F g_mass_storage.idProduct=0x37FF "\
+-		"g_mass_storage.iSerialNumber=\"\" "\
+-		"clk_ignore_unused "\
+-		"\0" \
+-	"initrd_addr=0x43800000\0" \
+-	"initrd_high=0xffffffff\0" \
+-	"bootcmd_mfg=run mfgtool_args;booti ${loadaddr} ${initrd_addr} ${fdt_addr};\0" \
+ /* Initial environment variables */
+ #define CONFIG_EXTRA_ENV_SETTINGS		\
+-	CONFIG_MFG_ENV_SETTINGS \
+ 	"script=boot.scr\0" \
+ 	"image=Image\0" \
+ 	"console=ttymxc2,115200 earlycon=ec_imx6q,0x30880000,115200\0" \
+ 	"fdt_addr=0x43000000\0"			\
+ 	"fdt_high=0xffffffffffffffff\0"		\
+-	"boot_fdt=try\0" \
+ 	"fdt_file="CONFIG_DEFAULT_DTB"\0" \
+ 	"initrd_addr=0x43800000\0"		\
+ 	"initrd_high=0xffffffffffffffff\0" \
+-	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
+-	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
+ 	"mmcautodetect=yes\0" \
+-	"mmcargs=setenv bootargs console=${console} root=/dev/mmcblk${mmcdev}p2 rootwait rw\0 " \
+-	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
+-	"bootscript=echo Running bootscript from mmc ...; " \
+-		"source\0" \
+-	"loadimage=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+-	"loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
+-	"mmcboot=echo Booting from mmc ...; " \
+-		"run mmcargs; " \
+-		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+-			"if run loadfdt; then " \
+-				"booti ${loadaddr} - ${fdt_addr}; " \
+-			"else " \
+-				"echo WARN: Cannot load the DT; " \
+-			"fi; " \
+-		"else " \
+-			"echo wait for boot; " \
+-		"fi;\0" \
+ 	"autoload=off\0" \
+-	"netargs=setenv bootargs console=${console} " \
+-		"root=/dev/nfs " \
+-		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
+-	"netboot=echo Booting from net ...; " \
+-		"run netargs;  " \
+-		"if test ${ip_dyn} = yes; then " \
+-			"setenv get_cmd dhcp; " \
+-		"else " \
+-			"setenv get_cmd tftp; " \
+-		"fi; " \
+-		"${get_cmd} ${loadaddr} ${image}; " \
+-		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+-			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
+-				"booti ${loadaddr} - ${fdt_addr}; " \
+-			"else " \
+-				"echo WARN: Cannot load the DT; " \
+-			"fi; " \
+-		"else " \
+-			"booti; " \
+-		"fi;\0"
++	"part=1\0" \
++	"bootscript=echo Running bootscript from ${iface} ...; source\0"	\
++	"iface_boot=if run loadbootscript; then run bootscript; else if run loadimage; then run loadfdt;" \
++	" booti ${loadaddr} - ${fdt_addr}; fi; fi;\0"	\
++	"iface_args=setenv bootargs console=${console} root=${rootdev} rootwait rw \0"	\
++	"loadbootscript=load ${iface} ${dev}:${part} ${loadaddr} ${script}\0"	\
++	"loadfdt=load ${iface} ${dev}:${part} ${fdt_addr} ${fdt_file}\0"	\
++	"loadimage=load ${iface} ${dev}:${part} ${loadaddr} ${image}\0"	\
++	"mmc_boot=setenv iface mmc; run ${iface}_pre; run ${iface}_init; run iface_args; run iface_boot\0"	\
++	"mmc_init=mmc rescan\0"	\
++	"mmc_pre=setenv iface mmc; setenv dev ${mmcdev}; setenv rootdev /dev/mmcblk${mmcdev}p2\0"	\
++	"usb_boot=setenv iface usb; run ${iface}_pre; run ${iface}_init; run iface_args; run iface_boot\0"	\
++	"usb_init=usb start\0"	\
++	"usb_pre=setenv iface usb; setenv dev 0; setenv rootdev /dev/sda2\0"	\
+ 
+ #define CONFIG_BOOTCOMMAND \
+-	   "mmc dev ${mmcdev}; if mmc rescan; then " \
+-		   "if run loadbootscript; then " \
+-			   "run bootscript; " \
+-		   "else " \
+-			   "if run loadimage; then " \
+-				   "run mmcboot; " \
+-			   "else booti ${loadaddr} - ${fdt_addr}; " \
+-			   "fi; " \
+-		   "fi; " \
+-	   "else booti ${loadaddr} - ${fdt_addr}; fi"
++	"run usb_boot; setenv mmcdev 1; run mmc_boot; setenv mmcdev 0; run mmc_boot;"
+ 
+ /* Link Definitions */
+ #define CONFIG_LOADADDR			0x40480000
+-- 
+1.9.1
+

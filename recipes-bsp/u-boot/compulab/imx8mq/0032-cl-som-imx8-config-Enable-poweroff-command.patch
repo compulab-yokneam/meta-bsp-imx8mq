@@ -1,0 +1,25 @@
+From 927aa3306a734c90b38d19c0e969b98d945625f5 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Fri, 15 Nov 2019 08:02:44 +0200
+Subject: [PATCH 32/32] cl-som-imx8: config: Enable poweroff command
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ configs/cl-som-imx8_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/configs/cl-som-imx8_defconfig b/configs/cl-som-imx8_defconfig
+index f1d956c..436f21b 100644
+--- a/configs/cl-som-imx8_defconfig
++++ b/configs/cl-som-imx8_defconfig
+@@ -14,6 +14,7 @@ CONFIG_ARCH_MISC_INIT=y
+ CONFIG_SPL=y
+ CONFIG_SPL_BOARD_INIT=y
+ CONFIG_HUSH_PARSER=y
++CONFIG_CMD_POWEROFF=y
+ CONFIG_CMD_EEPROM=y
+ CONFIG_CMD_EEPROM_LAYOUT=y
+ CONFIG_EEPROM_LAYOUT_HELP_STRING="v2, v3, v4"
+-- 
+1.9.1
+

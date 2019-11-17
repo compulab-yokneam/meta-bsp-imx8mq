@@ -17,5 +17,18 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0015-cl-som-imx8-defconfig-Disable-TMU.patch \
 	file://0016-CL-SOM-iMX8-Enable-LED.patch \
 	file://0017-Enable-eeprom-cmd.patch \
-	file://cl-som-imx8_defconfig \
+	file://0018-cl-som-imx8-Kconfig-Fix-the-Kconfig-location.patch \
+	file://0019-cl-som-imx8-defconfig-Update-all-configs.patch \
+	file://0020-cl-som-imx8-env-Update-default-boot-environment.patch \
+	file://0021-cl-som-imx8-env-Change-the-env-device-offset.patch \
+	file://0022-cl-som-imx8-envtools-Add-print-default-fw_env.config.patch \
+	file://0023-cl-som-imx8-Remove-unused-setup_fec_mac.patch \
+	file://0024-cl-som-imx8-Add-E-E-configuration-discovery-logics.patch \
+	file://0025-cl-som-imx8-Fixed-the-PHYS_SDRAM_SIZE-value-for-1G-c.patch \
+	file://0026-PHYS_SDRAM_SIZE-Return-the-correct-size-into-the-imx.patch \
+	file://0027-cl-som-imx8-spl-Added-epprom_spl-for-SPL-usage.patch \
+	file://0028-lpddr4-Take-drate-from-the-dram_timing_info.patch \
+	file://0029-cl-som-imx8-ddr-Major-the-ddr-detection-code-refacto.patch \
+	file://0031-cl-som-imx8-env-Change-boot-device-candidate-order.patch \
+	file://0032-cl-som-imx8-config-Enable-poweroff-command.patch \
 "

@@ -1,0 +1,29 @@
+From f924dddfbdfea4b9fa08010ee3e582bdd9cf0ab8 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Sat, 28 Sep 2019 16:55:44 +0300
+Subject: [PATCH 23/32] cl-som-imx8: Remove unused setup_fec_mac()
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ board/compulab/cl-som-imx8/cl-som-imx8.c | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/board/compulab/cl-som-imx8/cl-som-imx8.c b/board/compulab/cl-som-imx8/cl-som-imx8.c
+index c88fe19..31dda30 100644
+--- a/board/compulab/cl-som-imx8/cl-som-imx8.c
++++ b/board/compulab/cl-som-imx8/cl-som-imx8.c
+@@ -163,11 +163,6 @@ static int setup_fec(void)
+ 	return set_clk_enet(ENET_125MHZ);
+ }
+ 
+-static void setup_fec_mac(void) {
+-	if (handle_mac_address("ethaddr", /*CONFIG_SYS_I2C_EEPROM_BUS*/0))
+-		printf(NO_MAC_ADDR, "primary NIC");
+-}
+-
+ int board_phy_config(struct phy_device *phydev)
+ {
+ 	/* enable rgmii rxc skew and phy mode select to RGMII copper */
+-- 
+1.9.1
+

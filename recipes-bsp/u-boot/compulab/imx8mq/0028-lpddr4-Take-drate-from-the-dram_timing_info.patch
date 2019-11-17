@@ -1,0 +1,48 @@
+From 59a8afdb130e06bd33c37647571dd00af05e7ff8 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Wed, 30 Oct 2019 17:32:49 +0200
+Subject: [PATCH 28/32] lpddr4: Take drate from the dram_timing_info
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ drivers/ddr/imx8m/lpddr4_init.c | 24 +++++++++++++++++++++---
+ 1 file changed, 21 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/ddr/imx8m/lpddr4_init.c b/drivers/ddr/imx8m/lpddr4_init.c
+index d6422b9..a759573 100644
+--- a/drivers/ddr/imx8m/lpddr4_init.c
++++ b/drivers/ddr/imx8m/lpddr4_init.c
+@@ -50,9 +50,27 @@ void ddr_init(struct dram_timing_info *dram_timing)
+ 	reg32setbit(0x303A00F8, 5); /* PU_PGC_SW_PUP_REQ */
+ 
+ 	debug("DDRINFO: cfg clk\n");
+-	if (is_imx8mq())
+-		dram_pll_init(DRAM_PLL_OUT_800M);
+-	else
++	if (is_imx8mq()) {
++		enum dram_pll_out_val pll_val;
++		switch (dram_timing->fsp_table[0]) {
++		case 3200:
++			pll_val = DRAM_PLL_OUT_800M;
++			break;
++		case 3000:
++			pll_val = DRAM_PLL_OUT_750M;
++			break;
++		case 2400:
++			pll_val = DRAM_PLL_OUT_600M;
++			break;
++		case 1600:
++			pll_val = DRAM_PLL_OUT_400M;
++			break;
++		default:
++			pll_val = DRAM_PLL_OUT_800M;
++			break;
++		};
++		dram_pll_init(pll_val);
++	} else
+ 		dram_pll_init(DRAM_PLL_OUT_750M);
+ 
+ 	/*
+-- 
+1.9.1
+
