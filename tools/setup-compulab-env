@@ -20,7 +20,7 @@ get_meta ${url} ${branch} ${dir}
 
 get_meta_compulab_bsp() {
 dir="../sources/meta-compulab-bsp"
-branch="-b devel-imx8mq-4.14.98"
+branch="-b master"
 url="https://github.com/compulab-yokneam/meta-compulab-bsp"
 get_meta ${url} ${branch} ${dir}
 }
@@ -35,6 +35,7 @@ BBLAYERS += " \\
 	\${BSPDIR}/sources/meta-compulab \\
 	\${BSPDIR}/sources/meta-compulab-bsp/meta-desktop \\
 	\${BSPDIR}/sources/meta-compulab-bsp/meta-multimedia \\
+	\${BSPDIR}/sources/meta-compulab-bsp/meta-bsp \\
 	\${BSPDIR}/sources/meta-bsp-imx8mq \\
 "
 eof
@@ -45,6 +46,7 @@ mod_local() {
 CORE_IMAGE_EXTRA_INSTALL+=" dhcp-client imx-gpu-viv-demos "
 CORE_IMAGE_EXTRA_INSTALL+=" cl-uboot cl-deploy cl-stest cl-launcher cl-camera u-boot-fw-utils "
 CORE_IMAGE_EXTRA_INSTALL+=" memtester htop iotop tmux iperf3 "
+CORE_IMAGE_EXTRA_INSTALL+=" sysbench stress-ng "
 IMAGE_FEATURES+=" package-management ssh-server-openssh "
 cat << eof | tee -a ${LOCAL_CONF} > /dev/null
 CORE_IMAGE_EXTRA_INSTALL += "${CORE_IMAGE_EXTRA_INSTALL}"
