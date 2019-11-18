@@ -1,0 +1,53 @@
+#!/bin/bash -ex
+
+export MACHINE=cl-som-imx8
+
+# 1
+
+if [[ ! -d sources/meta-boot2qt/.git ]];then
+git clone -b warrior git://code.qt.io/yocto/meta-boot2qt.git sources/meta-boot2qt
+else
+git -C sources/meta-boot2qt status
+fi
+
+cat << eof > sources/meta-boot2qt/meta-boot2qt-distro/conf/distro/include/cl-som-imx8.conf
+include conf/distro/include/fsl.inc
+DEPLOY_CONF_NAME = "CompuLab ${MACHINE}"
+eof
+
+# 2 
+
+./sources/meta-boot2qt/b2qt-init-build-env init --device ${MACHINE}
+source ./setup-environment.sh $@
+
+BBLAYERS_CONF=conf/bblayers.conf
+cat << eof | tee -a ${BBLAYERS_CONF} > /dev/null
+
+BBLAYERS += " \\
+	\${BSPDIR}/sources/meta-freescale \\
+	\${BSPDIR}/sources/meta-freescale-3rdparty \\
+	\${BSPDIR}/sources/meta-bsp-imx8mq \\
+"
+eof
+
+LOCAL_CONF=conf/local.conf
+cat << eof | tee -a ${LOCAL_CONF} > /dev/null
+BBMASK += "linux-compulab_4.14.98.bb"
+eof
+
+# Set the machine name
+sed -i 's/\(MACHINE\) ??=.*/\1 = \"'${MACHINE}'\"/g' ${LOCAL_CONF}
+
+# Remove comments and empty lines
+sed -i '/^#/d;/^$/d' ${LOCAL_CONF}
+
+# 3
+cat << eom
+
+	For Boot to Qt for embedded Linux targets, run the build as follows:
+bitbake b2qt-embedded-qt5-image
+
+	For Qt Automotive targets, run the build as follows:
+bitbake b2qt-automotive-qt5-image
+
+eom

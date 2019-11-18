@@ -1,0 +1,24 @@
+# CompuLab Boo2Qt Quick Start Guide
+
+## Supported CompuLab Machines
+
+* `cl-som-imx8`
+
+# Prepare Boot2Qt Environment
+
+## Download CompuLab meta layer
+[source,console]
+git clone -b devel-next https://github.com/compulab-yokneam/meta-bsp-imx8mq.git sources/meta-bsp-imx8mq/
+
+## Issue the setup script
+[source,console]
+source sources/meta-bsp-imx8mq/tools/setup-b2qt-env b2qt-build
+
+# Run Boot2Qt image build
+## For Boot to Qt for embedded Linux targets, run the build as follows:
+[source,console]
+bitbake b2qt-embedded-qt5-image
+
+## For Qt Automotive targets, run the build as follows:
+[source,console]
+bitbake b2qt-automotive-qt5-image
