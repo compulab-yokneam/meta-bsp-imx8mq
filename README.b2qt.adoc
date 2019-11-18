@@ -8,7 +8,7 @@
 
 ## Download CompuLab meta layer
 [source,console]
-git clone -b devel-next https://github.com/compulab-yokneam/meta-bsp-imx8mq.git sources/meta-bsp-imx8mq/
+git clone -b devel-b2qt https://github.com/compulab-yokneam/meta-bsp-imx8mq.git sources/meta-bsp-imx8mq/
 
 ## Issue the setup script
 [source,console]
