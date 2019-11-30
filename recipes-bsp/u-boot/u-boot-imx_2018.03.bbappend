@@ -9,6 +9,3 @@ SRC_URI_append += " \
 do_configure_append_cl-som-imx8 () {
 	cp -rfv ${WORKDIR}/compulab.bmp ${S}/tools/logos/
 }
-
-PACKAGE_ARCH = "${MACHINE_ARCH}"
-COMPATIBLE_MACHINE = "(cl-som-imx8)"

@@ -32,3 +32,6 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0031-cl-som-imx8-env-Change-boot-device-candidate-order.patch \
 	file://0032-cl-som-imx8-config-Enable-poweroff-command.patch \
 "
+
+PACKAGE_ARCH = "${MACHINE_ARCH}"
+COMPATIBLE_MACHINE_cl-som-imx8 = "(cl-som-imx8)"

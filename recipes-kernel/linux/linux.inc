@@ -9,4 +9,4 @@ do_configure_append () {
 KERNEL_MODULE_AUTOLOAD += "goodix"
 KERNEL_MODULE_AUTOLOAD += "snd_soc_wm8731"
 
-COMPATIBLE_MACHINE = "cl-som-imx8"
+COMPATIBLE_MACHINE_cl-som-imx8 = "cl-som-imx8"
