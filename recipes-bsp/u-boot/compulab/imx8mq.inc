@@ -31,6 +31,8 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0029-cl-som-imx8-ddr-Major-the-ddr-detection-code-refacto.patch \
 	file://0031-cl-som-imx8-env-Change-boot-device-candidate-order.patch \
 	file://0032-cl-som-imx8-config-Enable-poweroff-command.patch \
+	file://0033-cl-som-imx8-ddr-2-nd-major-ddr-code-refactoring.patch \
+	file://0034-cl-som-imx8-defconfig-CONFIG_LOCALVERSION-cl-som-imx.patch \
 "
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
