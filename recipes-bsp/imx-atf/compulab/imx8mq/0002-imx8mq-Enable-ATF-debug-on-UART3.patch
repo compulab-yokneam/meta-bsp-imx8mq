@@ -1,0 +1,34 @@
+From 6d63f33a9646f868219c3cd01d9f1c82ff817dd4 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Fri, 3 Jan 2020 10:55:47 +0200
+Subject: [PATCH 2/2] imx8mq: Enable ATF debug on UART3
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ plat/imx/imx8mq/include/platform_def.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/plat/imx/imx8mq/include/platform_def.h b/plat/imx/imx8mq/include/platform_def.h
+index a25636e..906b14f 100644
+--- a/plat/imx/imx8mq/include/platform_def.h
++++ b/plat/imx/imx8mq/include/platform_def.h
+@@ -58,7 +58,7 @@
+ 
+ #define HAB_RVT_BASE			0x00000880 /* HAB_RVT for i.MX8MQ */
+ 
+-#define IMX_BOOT_UART_BASE		0x30860000
++#define IMX_BOOT_UART_BASE		0x30880000
+ #define IMX_BOOT_UART_CLK_IN_HZ		25000000 /* Select 25Mhz oscillator */
+ #define PLAT_CRASH_UART_BASE		IMX_BOOT_UART_BASE
+ #define PLAT__CRASH_UART_CLK_IN_HZ	25000000
+@@ -98,6 +98,6 @@
+ 
+ #define COUNTER_FREQUENCY		8000000 /* 8MHz */
+ 
+-#define DEBUG_CONSOLE			0
++#define DEBUG_CONSOLE			1
+ #define IMX_WDOG_B_RESET
+ #define PLAT_IMX8M			1
+-- 
+1.9.1
+
