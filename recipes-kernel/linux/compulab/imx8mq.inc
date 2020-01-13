@@ -25,5 +25,7 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0023-cl-som-imx8-dts-Fix-the-dcss-assigned-clocks.patch \
 	file://0024-cl-som-imx8-dts-Increase-lcdif-max-res-to-1920x1200.patch \
 	file://0025-cl-som-imx8-dts-Reduced-the-linux-cma-down-to-384M.patch \
+	file://0026-cl-som-imx8-config-Enable-FreeScale-CAAM.patch \
+	file://0027-cl-som-imx8-config-Set-ondemand-is-a-default-governo.patch \
 	file://defconfig \
 "
