@@ -1,0 +1,39 @@
+From 47ed5bdf76bb439258b28c467b2f726ace0766f3 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Tue, 14 Jan 2020 15:11:26 +0200
+Subject: [PATCH 35/35] cl-som-imx8: ddr: To make sure that the ddr_info
+ reached the eeprom
+
+Read the eeprom back in ordet to make sure that
+the ddr_info reached the eeprom. If not then continue
+with the default 1G memory setting. After that the user
+has to figure out what happens with the eeprom.
+Probably: eeprom wp pin GPIO1_13.
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ board/compulab/cl-som-imx8/ddr/ddr.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/board/compulab/cl-som-imx8/ddr/ddr.c b/board/compulab/cl-som-imx8/ddr/ddr.c
+index fa062ed..c9dccbe 100644
+--- a/board/compulab/cl-som-imx8/ddr/ddr.c
++++ b/board/compulab/cl-som-imx8/ddr/ddr.c
+@@ -172,7 +172,13 @@ void spl_dram_init(void)
+ 		printf("DDRINFO(M): mr5-8 [ 0x%x ]\n", ddr_info_mrr);
+ 		printf("DDRINFO(E): mr5-8 [ 0x%x ]\n", ddr_info);
+ 		cl_eeprom_set_ddrinfo(ddr_info_mrr);
+-		do_reset(NULL,0,0,NULL);
++		ddr_info = cl_eeprom_get_ddrinfo();
++		/* make sure that the ddr_info has reached the eeprom */
++		printf("DDRINFO(E): mr5-8 [ 0x%x ], read back\n", ddr_info);
++		if (ddr_info_mrr == ddr_info)
++			do_reset(NULL,0,0,NULL);
++		printf("DDRINFO(EEPROM): make sure that the eeprom is accessible\n");
++		printf("DDRINFO(EEPROM): i2c dev 1; i2c md 0x51 0x40 0x50\n");
+ 	}
+ 
+ 	if (lpddr4_array[i].id == DEFAULT)
+-- 
+1.9.1
+
