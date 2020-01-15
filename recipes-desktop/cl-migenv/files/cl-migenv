@@ -1,0 +1,76 @@
+#!/bin/bash
+
+old_off=0x400000
+old_size=0x1000
+old_env=$(mktemp --dry-run --tmpdir=/tmp --suffix=.env -q environment_XXX)
+
+new_off=0x1000
+new_size=0x4000
+
+function crt_env_conf() {
+# 1 - dev, 2 - off, 3 - size
+export env_conf=$(mktemp --dry-run --tmpdir=/tmp --suffix=.conf -q fw_env_XXX)
+cat << eof > ${env_conf}
+/dev/${1} ${2} ${3}
+eof
+}
+
+function old_env_devices() {
+ADEV=$(ls /sys/class/block/mmcblk[[:digit:]]boot[[:digit:]]/size /sys/class/block/mmcblk[[:digit:]]/size | awk -F"/" '($0=$5)' ORS=" ")
+
+for _dev in ${ADEV};do
+
+crt_env_conf ${_dev} ${old_off} ${old_size}
+
+fw_printenv -c ${env_conf} &>/dev/null
+[[ $? -eq 0 ]] && RADIO+=${_dev}" OFF "
+
+rm -rf ${env_conf}
+
+done
+}
+
+export RADIO=""
+old_env_devices
+if [[ ! -z ${RADIO} ]];then
+SELECT=$(dialog --no-items --backtitle "Select a source device:" --radiolist "Old environment devices:" 12 80 12 ${RADIO} --stdout)
+[[ -z ${SELECT} ]] && exit
+else
+SELECT=/dev/null
+exit
+fi
+
+crt_env_conf ${SELECT} ${old_off} ${old_size}
+# save old environment
+fw_printenv -c ${env_conf} > ${old_env}
+rm -rf ${env_conf}
+
+dialog --title "${SELECT}: Would you like to use this environment ?" --yesno "$(cat ${old_env})" 50 70 || exit
+
+RADIO=" ${SELECT}.env OFF "
+RADIO+=$(ls /sys/class/block/mmcblk[[:digit:]]boot[[:digit:]]/size /sys/class/block/mmcblk[[:digit:]]/size | awk -F"/" '($0=$5" OFF ")' ORS=" ")
+if [[ ! -z ${RADIO} ]];then
+SELECT=$(dialog --no-items --backtitle "Select a destination device:" --radiolist "New environment devices:" 12 80 12 ${RADIO} --stdout)
+[[ -z ${SELECT} ]] && exit
+else
+SELECT=/dev/null
+exit
+fi
+
+if [[ -b /dev/${SELECT} ]] ;then
+
+force_ro=$(cat /sys/class/block/${SELECT}/force_ro)
+echo 0 > /sys/class/block/${SELECT}/force_ro
+
+crt_env_conf ${SELECT} ${new_off} ${new_size}
+fw_setenv -c ${env_conf} -s ${old_env}
+
+echo ${force_ro} > /sys/class/block/${SELECT}/force_ro
+
+else
+    cp -v ${old_env} /tmp/${SELECT}
+fi
+
+rm -rf ${env_conf} ${old_env}
+
+exit 0
