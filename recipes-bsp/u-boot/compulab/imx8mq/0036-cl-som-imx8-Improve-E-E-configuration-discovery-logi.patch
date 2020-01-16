@@ -1,0 +1,61 @@
+From 256adbb41f60bff046f14f7365a7f6fb2ee85343 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Thu, 16 Jan 2020 14:07:42 +0200
+Subject: [PATCH 36/36] cl-som-imx8: Improve E/!E configuration discovery
+ logics
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ board/compulab/cl-som-imx8/cl-som-imx8.c | 23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
+
+diff --git a/board/compulab/cl-som-imx8/cl-som-imx8.c b/board/compulab/cl-som-imx8/cl-som-imx8.c
+index b7fd6d3..402e652 100644
+--- a/board/compulab/cl-som-imx8/cl-som-imx8.c
++++ b/board/compulab/cl-som-imx8/cl-som-imx8.c
+@@ -117,9 +117,6 @@ static iomux_v3_cfg_t const fec1_rst_pads[] = {
+ 	IMX8MQ_PAD_GPIO1_IO09__GPIO1_IO9 | MUX_PAD_CTRL(NO_PAD_CTRL),
+ };
+ 
+-#define FEC_GPIO_16 IMX_GPIO_NR(1, 16)
+-#define FEC_GPIO_17 IMX_GPIO_NR(1, 17)
+-
+ #ifdef CPL_NET_DISC_LOGICS
+ static iomux_v3_cfg_t const fec1_default_pads[] = {
+ 	IMX8MQ_PAD_ENET_MDC__ENET_MDC | MUX_PAD_CTRL(NO_PAD_CTRL),
+@@ -131,20 +128,24 @@ static iomux_v3_cfg_t const fec1_gpio_pads[] = {
+ 	IMX8MQ_PAD_ENET_MDIO__GPIO1_IO17 | MUX_PAD_CTRL(NO_PAD_CTRL),
+ };
+ 
+-static int fec_status = 0;
+ static int get_fec_status(int mode)
+ {
+-	int rc = 0;
++	int rc = 0, i = 0;
++	int gpios[] = { 16, 17 };
++	static int fec_status = 0;
+ 	if (mode) {
++		fec_status = 0;
+ 		/* Configure straps pins as GPIOs */
+ 		imx_iomux_v3_setup_multiple_pads(fec1_gpio_pads, ARRAY_SIZE(fec1_gpio_pads));
+ 
+-		gpio_request(FEC_GPIO_16, "fec_gpio_16");
+-		gpio_request(FEC_GPIO_17, "fec_gpio_17");
+-		rc += gpio_get_value(FEC_GPIO_16);
+-		rc += gpio_get_value(FEC_GPIO_17);
+-		fec_status = rc;
+-
++		for ( i = 0 ; i < ARRAY_SIZE(gpios) ; i++ ) {
++			char label[10];
++			sprintf(label, "gpio_%d" , gpios[i]);
++			gpio_request(IMX_GPIO_NR(1, gpios[i]), label);
++			gpio_set_value(IMX_GPIO_NR(1, gpios[i]),1);
++			rc = gpio_get_value(IMX_GPIO_NR(1, gpios[i]));
++			fec_status += rc;
++		}
+ 		/* Restore the straps pins' configurations */
+ 		imx_iomux_v3_setup_multiple_pads(fec1_default_pads, ARRAY_SIZE(fec1_default_pads));
+ 	}
+-- 
+1.9.1
+

@@ -34,6 +34,7 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0033-cl-som-imx8-ddr-2-nd-major-ddr-code-refactoring.patch \
 	file://0034-cl-som-imx8-defconfig-CONFIG_LOCALVERSION-cl-som-imx.patch \
 	file://0035-cl-som-imx8-ddr-To-make-sure-that-the-ddr_info-reach.patch \
+	file://0036-cl-som-imx8-Improve-E-E-configuration-discovery-logi.patch \
 "
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
