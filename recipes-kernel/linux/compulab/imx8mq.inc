@@ -27,5 +27,8 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0025-cl-som-imx8-dts-Reduced-the-linux-cma-down-to-384M.patch \
 	file://0026-cl-som-imx8-config-Enable-FreeScale-CAAM.patch \
 	file://0027-cl-som-imx8-config-Set-ondemand-is-a-default-governo.patch \
+	file://0028-regulator-userspace-consumer-add-MODULE_ALIAS-macro.patch \
+	file://0029-regulator-add-userspace-consumer-wrapper-driver.patch \
+	file://0030-cl-som-imx8-dts-Added-otg-support-with-extcon.patch \
 	file://defconfig \
 "

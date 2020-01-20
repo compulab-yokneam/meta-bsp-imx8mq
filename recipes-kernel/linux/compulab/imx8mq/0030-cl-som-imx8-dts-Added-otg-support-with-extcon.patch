@@ -1,0 +1,106 @@
+From 33664d3e728911ecba1e0856eafdac34967a9b41 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Sun, 19 Jan 2020 17:18:03 +0200
+Subject: [PATCH 30/30] cl-som-imx8: dts: Added otg support with extcon
+
+Added otg support with extcon and user space wrapper.
+How to:
+HW) short P20.15 and P20.17;
+    if disconnected then in host mode and can't be controlled by the
+    users space wrapper.
+SW) The device boots up as a host.
+set host mode)
+echo disabled > /sys/bus/platform/drivers/reg-userspace-consumer/reg-userspace-consumer.0/state
+set peripheral mode)
+echo enabled > /sys/bus/platform/drivers/reg-userspace-consumer/reg-userspace-consumer.0/state
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm64/boot/dts/compulab/compulab-imx8mq.dtsi | 28 ++++++++++++++++++++++-
+ arch/arm64/configs/cl-som-imx8_defconfig          |  3 +++
+ 2 files changed, 30 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/compulab/compulab-imx8mq.dtsi b/arch/arm64/boot/dts/compulab/compulab-imx8mq.dtsi
+index 5961965..bc2d977 100644
+--- a/arch/arm64/boot/dts/compulab/compulab-imx8mq.dtsi
++++ b/arch/arm64/boot/dts/compulab/compulab-imx8mq.dtsi
+@@ -63,6 +63,16 @@
+ 			off-on-delay = <20000>;
+ 			enable-active-high;
+ 		};
++
++		reg_usb0_peripheral: usb0_peripheral {
++			compatible = "regulator-fixed";
++			regulator-name = "usb0_peripheral";
++			regulator-min-microvolt = <3300000>;
++			regulator-max-microvolt = <3300000>;
++			gpio = <&gpio5 28 GPIO_ACTIVE_HIGH>;
++			startup-delay-us = <0>;
++			enable-active-high;
++		};
+ 	};
+ 
+ 	simple_sound: sound {
+@@ -137,6 +147,19 @@
+ 			max-brightness = <255>;
+ 		};
+ 	};
++
++	usb0_peripheral_en: usb0_peripheral_en@0 {
++		compatible = "userspace-consumer-wrapper";
++		comment = "USB0 mode swich host/peripheral enable/disable";
++
++		regulator-name = "usb0_peripheral";
++		us-folder-num = <0>;
++	};
++
++	extcon_usb0: extcon_usb0 {
++		compatible = "linux,extcon-usb-gpio";
++		id-gpio = <&gpio5 29 GPIO_ACTIVE_HIGH>;
++	};
+ };
+ 
+ &clk {
+@@ -153,6 +176,8 @@
+ 			fsl,pins = <
+ 				MX8MQ_IOMUXC_GPIO1_IO12_GPIO1_IO12	0x16
+ 				MX8MQ_IOMUXC_GPIO1_IO13_GPIO1_IO13	0x16
++				MX8MQ_IOMUXC_UART4_TXD_GPIO5_IO29 	0x16
++				MX8MQ_IOMUXC_UART4_RXD_GPIO5_IO28 	0x16
+ 			>;
+ 		};
+ 
+@@ -587,7 +612,8 @@
+ 
+ &usb_dwc3_0 {
+ 	status = "okay";
+-	dr_mode = "host";
++	dr_mode = "otg";
++	extcon = <&extcon_usb0>;
+ };
+ 
+ &usb3_phy1 {
+diff --git a/arch/arm64/configs/cl-som-imx8_defconfig b/arch/arm64/configs/cl-som-imx8_defconfig
+index 421b40b..69b01c6 100644
+--- a/arch/arm64/configs/cl-som-imx8_defconfig
++++ b/arch/arm64/configs/cl-som-imx8_defconfig
+@@ -270,6 +270,8 @@ CONFIG_MFD_MAX77620=y
+ CONFIG_MFD_SEC_CORE=y
+ CONFIG_REGULATOR=y
+ CONFIG_REGULATOR_FIXED_VOLTAGE=y
++CONFIG_REGULATOR_USERSPACE_CONSUMER=m
++CONFIG_REGULATOR_USERSPACE_CONSUMER_WRAPPER=m
+ CONFIG_REGULATOR_GPIO=y
+ CONFIG_REGULATOR_MAX77620=y
+ CONFIG_REGULATOR_PFUZE100=y
+@@ -441,6 +443,7 @@ CONFIG_BCM_FLEXRM_MBOX=y
+ CONFIG_ARM_SMMU=y
+ CONFIG_ARM_SMMU_V3=y
+ CONFIG_ARCH_MXC_ARM64=y
++CONFIG_EXTCON_USB_GPIO=y
+ CONFIG_EXTCON_PTN5150=y
+ CONFIG_IIO=y
+ CONFIG_PWM=y
+-- 
+1.9.1
+
