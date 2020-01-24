@@ -17,21 +17,28 @@ It is up to developer to setup arm64 build environment:
 export ARCH=arm64
 export CROSS_COMPILE=/usr/bin/aarch64-linux-gnu-
 </pre>
+
+# CompuLab Linux Kernel setup
 * Create a folder to organize the files:
 <pre>
 mkdir imx8mq
 cd imx8mq
 </pre>
+
 * Download CompuLab BSP
 <pre>
 git clone -b devel-next https://github.com/compulab-yokneam/meta-bsp-imx8mq.git
 export PATCHES=$(pwd)/meta-bsp-imx8mq/recipes-kernel/linux/compulab/imx8mq
 </pre>
 
-# CompuLab Linux Kernel setup
+* Download NXP linux-imx
 <pre>
 git clone https://source.codeaurora.org/external/imx/linux-imx.git
 git -C linux-imx checkout -b linux-compulab rel_imx_4.14.98_2.0.0_ga
+</pre>
+
+* Apply the CompuLab patches
+<pre>
 git -C linux-imx am ${PATCHES}/*.patch
 </pre>
 
