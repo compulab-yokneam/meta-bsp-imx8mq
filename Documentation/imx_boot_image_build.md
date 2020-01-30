@@ -81,12 +81,19 @@ cp -v $(find uboot-imx | awk '/u-boot-spl.bin$|u-boot.bin$|u-boot-nodtb.bin$|cl-
 <pre>
 unset ARCH CROSS_COMPILE
 </pre>
-* Issue:
+
+* Set an imx-boot target environment variable:
+
+|HDMI|Display Port|
+|---|---|
+|<pre>export IMX_BOOT_TARGET=flash_evk</pre>|<pre>export IMX_BOOT_TARGET=flash_dp_evk</pre>|
+
+* Issue build command:
 <pre>
 cd ${SRC_ROOT}/imx-mkimage/iMX8M
 sed "s/\(^dtbs = \).*/\1${MACHINE}.dtb/;s/\(mkimage\)_uboot/\1/" soc.mak > Makefile
 make clean
-make flash_evk SOC=iMX8MQ
+make ${IMX_BOOT_TARGET} SOC=iMX8MQ
 </pre>
 
 ## Flashing
