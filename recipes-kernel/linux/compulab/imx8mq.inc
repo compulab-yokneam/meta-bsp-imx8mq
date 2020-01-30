@@ -30,5 +30,6 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0028-regulator-userspace-consumer-add-MODULE_ALIAS-macro.patch \
 	file://0029-regulator-add-userspace-consumer-wrapper-driver.patch \
 	file://0030-cl-som-imx8-dts-Added-otg-support-with-extcon.patch \
+	file://0031-cl-som-imx8-dts-Added-sbc-imx8-dp.dts.patch \
 	file://defconfig \
 "
