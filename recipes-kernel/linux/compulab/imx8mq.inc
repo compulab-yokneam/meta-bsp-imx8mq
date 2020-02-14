@@ -31,5 +31,6 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0029-regulator-add-userspace-consumer-wrapper-driver.patch \
 	file://0030-cl-som-imx8-dts-Added-otg-support-with-extcon.patch \
 	file://0031-cl-som-imx8-dts-Added-sbc-imx8-dp.dts.patch \
+	file://0032-cl-som-imx8-defconfig-Update-config.patch \
 	file://defconfig \
 "

@@ -1,0 +1,58 @@
+From bc1d9c006e09295d823b46236d40f71e492aaf67 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Thu, 13 Feb 2020 20:33:14 +0200
+Subject: [PATCH 32/32] cl-som-imx8: defconfig: Update config
+
+Synchronized with the NXP defconfig
+
+1) Disabled:
+CONFIG_MDIO_BITBANG
+CONFIG_DRM_VIVANTE
+2) Enabled
+CONFIG_EDAC
+CONFIG_HWSPINLOCK
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm64/configs/cl-som-imx8_defconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm64/configs/cl-som-imx8_defconfig b/arch/arm64/configs/cl-som-imx8_defconfig
+index 69b01c6..9b4033f 100644
+--- a/arch/arm64/configs/cl-som-imx8_defconfig
++++ b/arch/arm64/configs/cl-som-imx8_defconfig
+@@ -185,7 +185,6 @@ CONFIG_SKY2=y
+ CONFIG_SMC91X=y
+ CONFIG_SMSC911X=y
+ CONFIG_STMMAC_ETH=m
+-CONFIG_MDIO_BITBANG=y
+ CONFIG_AT803X_PHY=y
+ CONFIG_MICREL_PHY=y
+ CONFIG_REALTEK_PHY=m
+@@ -296,7 +295,6 @@ CONFIG_IMX_DPU_CORE=y
+ CONFIG_IMX_DCSS_CORE=y
+ CONFIG_IMX_LCDIF_CORE=y
+ CONFIG_DRM=y
+-CONFIG_DRM_VIVANTE=y
+ CONFIG_DRM_PANEL_SIMPLE=m
+ CONFIG_DRM_IMX_PARALLEL_DISPLAY=y
+ CONFIG_DRM_IMX_TVE=y
+@@ -404,6 +402,7 @@ CONFIG_LEDS_PWM=y
+ CONFIG_LEDS_SYSCON=y
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=y
+ CONFIG_LEDS_TRIGGER_CPU=y
++CONFIG_EDAC=y
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_MAX77686=y
+ CONFIG_RTC_DRV_EM3027=y
+@@ -435,6 +434,7 @@ CONFIG_COMMON_CLK_SCPI=y
+ CONFIG_COMMON_CLK_CS2000_CP=y
+ CONFIG_COMMON_CLK_S2MPS11=y
+ CONFIG_CLK_QORIQ=y
++CONFIG_HWSPINLOCK=y
+ CONFIG_CLKSRC_IMX_SYS_CNT=y
+ CONFIG_MAILBOX=y
+ CONFIG_ARM_MHU=y
+-- 
+1.9.1
+
