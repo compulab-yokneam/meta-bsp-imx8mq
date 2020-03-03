@@ -32,5 +32,6 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0030-cl-som-imx8-dts-Added-otg-support-with-extcon.patch \
 	file://0031-cl-som-imx8-dts-Added-sbc-imx8-dp.dts.patch \
 	file://0032-cl-som-imx8-defconfig-Update-config.patch \
+	file://0033-cl-som-imx8-dts-Added-sbc-imx8-no-wp.dts.patch \
 	file://defconfig \
 "
