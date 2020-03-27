@@ -52,3 +52,21 @@ make -C linux-imx
 <pre>
 make -C linux-imx dtbs
 </pre>
+
+# Update the platform defconfig
+
+* Modify the current config
+<pre>
+make -C linux-imx menuconfig
+</pre>
+
+* Save the current config
+<pre>
+make -C linux-imx savedefconfig
+cp linux-imx/defocnfig linux-imx/arch/arm64/configs/${MACHINE}_defconfig
+</pre>
+
+* Commit the changes
+<pre>
+git -C linux-imx commit --signoff --message "cl-som-imx8: Updated defconfig" arch/arm64/configs/${MACHINE}_defconfig
+</pre>
