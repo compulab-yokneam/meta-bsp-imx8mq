@@ -63,7 +63,7 @@ make -C linux-imx menuconfig
 * Save the current config
 <pre>
 make -C linux-imx savedefconfig
-cp linux-imx/defocnfig linux-imx/arch/arm64/configs/${MACHINE}_defconfig
+cp linux-imx/defconfig linux-imx/arch/arm64/configs/${MACHINE}_defconfig
 </pre>
 
 * Commit the changes
