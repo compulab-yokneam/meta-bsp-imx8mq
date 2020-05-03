@@ -1,0 +1,26 @@
+From 185d7bb31af860a7b69029318920bee204c11cac Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Wed, 29 Apr 2020 19:37:02 +0300
+Subject: [PATCH 55/55] cl-som-imx8: dts: Add usdhc1 regulator off-on-delay-us
+ value
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm/dts/cl-som-imx8.dts | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/dts/cl-som-imx8.dts b/arch/arm/dts/cl-som-imx8.dts
+index 9e92506..7cccee0 100644
+--- a/arch/arm/dts/cl-som-imx8.dts
++++ b/arch/arm/dts/cl-som-imx8.dts
+@@ -56,6 +56,7 @@
+ 			regulator-min-microvolt = <3300000>;
+ 			regulator-max-microvolt = <3300000>;
+ 			gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
++			u-boot,off-on-delay-us = <20000>;
+ 			enable-active-high;
+ 		};
+ 
+-- 
+1.9.1
+

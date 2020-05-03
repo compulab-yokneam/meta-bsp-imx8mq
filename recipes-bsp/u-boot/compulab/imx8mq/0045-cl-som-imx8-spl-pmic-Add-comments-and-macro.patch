@@ -1,0 +1,51 @@
+From 629c441f5984897328e73faf9916d113cfba7917 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Thu, 26 Mar 2020 13:01:57 +0200
+Subject: [PATCH 45/55] cl-som-imx8: spl: pmic: Add comments and macro
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ board/compulab/cl-som-imx8/spl.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
+
+diff --git a/board/compulab/cl-som-imx8/spl.c b/board/compulab/cl-som-imx8/spl.c
+index 6c494a4..95a4417 100644
+--- a/board/compulab/cl-som-imx8/spl.c
++++ b/board/compulab/cl-som-imx8/spl.c
+@@ -156,25 +156,26 @@ int power_init_board(void)
+ 	pmic_reg_read(p, PFUZE100_DEVICEID, &reg);
+ 	printf("PMIC:  PFUZE100 ID=0x%02x\n", reg);
+ 
+-	/* Increase the DRAM rail voltage up to 1V125 */
++	/* Increase the DRAM_1V1 rail voltage up to 1V150 */
+ 	pmic_reg_read(p, PFUZE100_SW2VOL, &reg);
+-	if ((reg & 0x3f) != 0x1E) {
+-		reg &= ~0x3f;
++	if ((reg & SW1x_NORMAL_MASK) != 0x1E) {
++		reg &= ~SW1x_NORMAL_MASK;
+ 		reg |= 0x1E;
+ 		pmic_reg_write(p, PFUZE100_SW2VOL, reg);
+ 	}
+ 
+ 	/* Increase the GPU rail voltage */
+ 	pmic_reg_read(p, PFUZE100_SW1ABVOL, &reg);
+-	if ((reg & 0x3f) != 0x1C) {
+-		reg &= ~0x3f;
++	if ((reg & SW1x_NORMAL_MASK) != 0x1C) {
++		reg &= ~SW1x_NORMAL_MASK;
+ 		reg |= 0x1C;
+ 		pmic_reg_write(p, PFUZE100_SW1ABVOL, reg);
+ 	}
+ 
++	/* Increase the DRAM_0V9 rail voltage up to 1V0 */
+ 	pmic_reg_read(p, PFUZE100_SW3AVOL, &reg);
+-	if ((reg & 0x3f) != 0x18) {
+-		reg &= ~0x3f;
++	if ((reg & SW1x_NORMAL_MASK) != 0x18) {
++		reg &= ~SW1x_NORMAL_MASK;
+ 		reg |= 0x18;
+ 		pmic_reg_write(p, PFUZE100_SW3AVOL, reg);
+ 	}
+-- 
+1.9.1
+

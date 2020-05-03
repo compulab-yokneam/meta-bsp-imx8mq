@@ -1,0 +1,54 @@
+From 2d2467f5a1101e33918f9c6ac0a1d6c1cb6cd8f1 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Wed, 29 Apr 2020 19:33:29 +0300
+Subject: [PATCH 54/55] cl-som-imx8: dts: Change the usdhc2 pads'
+ configurations
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm/dts/cl-som-imx8.dts | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/arch/arm/dts/cl-som-imx8.dts b/arch/arm/dts/cl-som-imx8.dts
+index 0e67961..9e92506 100644
+--- a/arch/arm/dts/cl-som-imx8.dts
++++ b/arch/arm/dts/cl-som-imx8.dts
+@@ -208,23 +208,23 @@
+ 
+ 		pinctrl_usdhc2: usdhc2grp {
+ 			fsl,pins = <
+-				MX8MQ_IOMUXC_SD2_CLK_USDHC2_CLK			0x83
+-				MX8MQ_IOMUXC_SD2_CMD_USDHC2_CMD			0xc3
+-				MX8MQ_IOMUXC_SD2_DATA0_USDHC2_DATA0		0xc3
+-				MX8MQ_IOMUXC_SD2_DATA1_USDHC2_DATA1		0xc3
+-				MX8MQ_IOMUXC_SD2_DATA2_USDHC2_DATA2		0xc3
+-				MX8MQ_IOMUXC_SD2_DATA3_USDHC2_DATA3		0xc3
++				MX8MQ_IOMUXC_SD2_CLK_USDHC2_CLK			0x8d
++				MX8MQ_IOMUXC_SD2_CMD_USDHC2_CMD			0xcd
++				MX8MQ_IOMUXC_SD2_DATA0_USDHC2_DATA0		0xcd
++				MX8MQ_IOMUXC_SD2_DATA1_USDHC2_DATA1		0xcd
++				MX8MQ_IOMUXC_SD2_DATA2_USDHC2_DATA2		0xcd
++				MX8MQ_IOMUXC_SD2_DATA3_USDHC2_DATA3		0xcd
+ 			>;
+ 		};
+ 
+ 		pinctrl_usdhc2_100mhz: usdhc2grp100mhz {
+ 			fsl,pins = <
+-				MX8MQ_IOMUXC_SD2_CLK_USDHC2_CLK			0x85
+-				MX8MQ_IOMUXC_SD2_CMD_USDHC2_CMD			0xc5
+-				MX8MQ_IOMUXC_SD2_DATA0_USDHC2_DATA0		0xc5
+-				MX8MQ_IOMUXC_SD2_DATA1_USDHC2_DATA1		0xc5
+-				MX8MQ_IOMUXC_SD2_DATA2_USDHC2_DATA2		0xc5
+-				MX8MQ_IOMUXC_SD2_DATA3_USDHC2_DATA3		0xc5
++				MX8MQ_IOMUXC_SD2_CLK_USDHC2_CLK			0x9f
++				MX8MQ_IOMUXC_SD2_CMD_USDHC2_CMD			0xdf
++				MX8MQ_IOMUXC_SD2_DATA0_USDHC2_DATA0		0xdf
++				MX8MQ_IOMUXC_SD2_DATA1_USDHC2_DATA1		0xdf
++				MX8MQ_IOMUXC_SD2_DATA2_USDHC2_DATA2		0xdf
++				MX8MQ_IOMUXC_SD2_DATA3_USDHC2_DATA3		0xdf
+ 			>;
+ 		};
+ 
+-- 
+1.9.1
+

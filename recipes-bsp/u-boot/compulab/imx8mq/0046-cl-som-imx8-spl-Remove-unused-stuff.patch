@@ -1,0 +1,35 @@
+From 2756eaf10836a6157fbed023c96d8f54c80eb088 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Sun, 29 Mar 2020 12:55:05 +0300
+Subject: [PATCH 46/55] cl-som-imx8: spl: Remove unused stuff
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ board/compulab/cl-som-imx8/spl.c | 11 -----------
+ 1 file changed, 11 deletions(-)
+
+diff --git a/board/compulab/cl-som-imx8/spl.c b/board/compulab/cl-som-imx8/spl.c
+index 95a4417..b33c463 100644
+--- a/board/compulab/cl-som-imx8/spl.c
++++ b/board/compulab/cl-som-imx8/spl.c
+@@ -190,17 +190,6 @@ int power_init_board(void)
+ 
+ void spl_board_init(void)
+ {
+-#ifdef CONFIG_MXC_SPI
+-	board_ecspi_init();
+-#endif
+-
+-#ifndef CONFIG_SPL_USB_SDP_SUPPORT
+-	/* Serial download mode */
+-	if (is_usb_boot()) {
+-		puts("Back to ROM, SDP\n");
+-		restore_boot_params();
+-	}
+-#endif
+ 	puts("Normal Boot\n");
+ }
+ 
+-- 
+1.9.1
+

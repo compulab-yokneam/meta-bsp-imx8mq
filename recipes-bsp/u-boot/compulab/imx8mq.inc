@@ -37,6 +37,23 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0036-cl-som-imx8-Improve-E-E-configuration-discovery-logi.patch \
 	file://0037-cl-som-imx8-ddr-Improve-the-ddr-discovery-logics.patch \
 	file://0038-cl-som-imx8-Changed-env-device-discovery-logics.patch \
+	file://0039-cl-som-imx8-Add-a-fast-ddr-discovery-way.patch \
+	file://0040-cl-som-imx8-Add-Micron-4g-ddr-settings.patch \
+	file://0041-cl-som-imx8-Add-Micron-4g-ddr-to-build.patch \
+	file://0042-cl-som-imx8-Add-Micron-4g-ddr-support.patch \
+	file://0043-cl-som-imx8-config-Chang-local-version.patch \
+	file://0044-cl-som-imx8-dts-Remove-unused-stuff.patch \
+	file://0045-cl-som-imx8-spl-pmic-Add-comments-and-macro.patch \
+	file://0046-cl-som-imx8-spl-Remove-unused-stuff.patch \
+	file://0047-cl-som-imx8-ddr-Some-small-cleanup-and-refactoring.patch \
+	file://0048-fwcall-Enable-psci-reset.patch \
+	file://0049-cl-som-imx8-dts-Add-linaro-optee-descriptor.patch \
+	file://0050-cl-som-imx8-dts-Configure-gpio156.patch \
+	file://0051-cl-som-imx8-dts-Clean-up-uart3-pinmux.patch \
+	file://0052-cl-som-imx8-dts-Fix-the-i2c-configurations.patch \
+	file://0053-cl-som-imx8-dts-Change-the-usdhc1-pads-configuration.patch \
+	file://0054-cl-som-imx8-dts-Change-the-usdhc2-pads-configuration.patch \
+	file://0055-cl-som-imx8-dts-Add-usdhc1-regulator-off-on-delay-us.patch \
 "
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"

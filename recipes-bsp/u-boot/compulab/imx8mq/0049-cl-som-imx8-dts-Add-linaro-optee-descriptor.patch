@@ -1,0 +1,31 @@
+From 0e4a705ad0dc8b79f5b2628a195a658e7c4f0f26 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Wed, 29 Apr 2020 19:26:26 +0300
+Subject: [PATCH 49/55] cl-som-imx8: dts: Add linaro optee descriptor
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm/dts/cl-som-imx8.dts | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/arm/dts/cl-som-imx8.dts b/arch/arm/dts/cl-som-imx8.dts
+index 56c0c25..f725aaa 100644
+--- a/arch/arm/dts/cl-som-imx8.dts
++++ b/arch/arm/dts/cl-som-imx8.dts
+@@ -29,6 +29,13 @@
+ 		stdout-path = &uart3;
+ 	};
+ 
++	firmware {
++		optee {
++			compatible = "linaro,optee-tz";
++			method = "smc";
++		};
++	};
++
+ 	leds {
+ 		compatible = "gpio-leds";
+ 		heartbeat-led {
+-- 
+1.9.1
+

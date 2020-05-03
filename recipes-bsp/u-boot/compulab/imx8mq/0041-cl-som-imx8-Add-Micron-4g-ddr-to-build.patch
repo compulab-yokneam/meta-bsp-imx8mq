@@ -1,0 +1,59 @@
+From 5e7966a07bf8d1402e527268678a4724212ac337 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Wed, 4 Mar 2020 16:19:09 +0200
+Subject: [PATCH 41/55] cl-som-imx8: Add Micron 4g ddr to build
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ board/compulab/cl-som-imx8/Makefile  | 7 ++++++-
+ board/compulab/cl-som-imx8/ddr/ddr.c | 4 ++++
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/board/compulab/cl-som-imx8/Makefile b/board/compulab/cl-som-imx8/Makefile
+index fa1e206..482d77f 100644
+--- a/board/compulab/cl-som-imx8/Makefile
++++ b/board/compulab/cl-som-imx8/Makefile
+@@ -11,11 +11,16 @@ obj-$(CONFIG_$(SPL_)DM_PMIC_PFUZE100) += ../../freescale/common/pfuze.o
+ obj-$(CONFIG_POWER_PFUZE100) += ../../freescale/common/pfuze.o
+ 
+ ifdef CONFIG_SPL_BUILD
+-obj-y += spl.o ddr/lpddr4_timing_1g.o ddr/lpddr4_timing_2g.o
++obj-y += spl.o
++ifdef CONFIG_2OP_FULL_SUPPORT
++obj-y += ddr/lpddr4_timing_1g.o ddr/lpddr4_timing_2g.o
+ obj-y += ddr/lpddr4_timing_05_10_2g.o
++endif
+ obj-y += ddr/lpddr4_timing_05_10_2g_3op.o
+ obj-y += ddr/lpddr4_timing_1g_3op.o
+ obj-y += ddr/lpddr4_timing_2g_3op.o
++obj-y += ddr/lpddr4_timing_ff000110_4g_2op.o
++obj-y += ddr/lpddr4_timing_ff000110_4g_3op.o
+ obj-y += ddr/ddr.o
+ obj-y += eeprom_spl.o
+ else
+diff --git a/board/compulab/cl-som-imx8/ddr/ddr.c b/board/compulab/cl-som-imx8/ddr/ddr.c
+index dc04511..d8a2e0b 100644
+--- a/board/compulab/cl-som-imx8/ddr/ddr.c
++++ b/board/compulab/cl-som-imx8/ddr/ddr.c
+@@ -47,14 +47,18 @@ struct lpddr4_tcm_desc {
+ 
+ #define DEFAULT (('D' << 24) + ('E' << 16 ) + ( 'F' << 8 ) + 'A')
+ static const struct lpddr4_desc lpddr4_array_2op[] = {
++	{ .name = "Micron", .id = 0xFF000110, .size = 4096, .count = 1, .timing = { &dram_timing_ff000110_4g_2op } },
++#if CONFIG_2OP_FULL_SUPPORT
+ 	{ .name = "Micron", .id = 0xFF020008, .size = 2048, .count = 1, .timing = { &dram_timing_2g } },
+ 	{ .name = "Samsung",.id = 0x01050008, .size = 1024, .count = 1, .timing = { &dram_timing_1g } },
+ 	{ .name = "Nanya",  .id = 0x05000008, .size = 1024, .count = 1, .timing = { &dram_timing_1g} },
+ 	{ .name = "Nanya", . id = 0x05000010, .size = 2048, .count = 1, .timing = { &dram_timing_05_10_2g} },
++#endif
+ };
+ 
+ static const struct lpddr4_desc lpddr4_array_3op[] = {
+ 	{ .name = "Micron", .id = 0xFF020008, .size = 2048, .count = 1, .timing = { &dram_timing_2g_3op } },
++	{ .name = "Micron", .id = 0xFF000110, .size = 4096, .count = 1, .timing = { &dram_timing_ff000110_4g_3op } },
+ 	{ .name = "Samsung",.id = 0x01050008, .size = 1024, .count = 1, .timing = { &dram_timing_1g_3op } },
+ 	{ .name = "Samsung",.id = 0x01061010, .size = 2048, .count = 1, .timing = { &dram_timing_05_10_2g_3op} },
+ 	{ .name = "Nanya",  .id = 0x05000008, .size = 1024, .count = 1, .timing = { &dram_timing_1g_3op } },
+-- 
+1.9.1
+

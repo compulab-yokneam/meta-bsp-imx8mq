@@ -1,0 +1,146 @@
+From 9251c6789ac31553be87ba65e930db5612886429 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Thu, 5 Mar 2020 10:06:27 +0200
+Subject: [PATCH 42/55] cl-som-imx8: Add Micron 4g ddr support
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm/mach-imx/imx8m/soc.c            | 13 ++++---------
+ arch/arm/mach-imx/misc.c                 |  2 ++
+ board/compulab/cl-som-imx8/cl-som-imx8.c | 32 ++++++++++++++++++++++++++++----
+ include/configs/cl-som-imx8.h            |  9 ++++++++-
+ 4 files changed, 42 insertions(+), 14 deletions(-)
+
+diff --git a/arch/arm/mach-imx/imx8m/soc.c b/arch/arm/mach-imx/imx8m/soc.c
+index 1b65e77..15108fa 100644
+--- a/arch/arm/mach-imx/imx8m/soc.c
++++ b/arch/arm/mach-imx/imx8m/soc.c
+@@ -154,18 +154,13 @@ static struct mm_region imx8m_mem_map[] = {
+ 
+ struct mm_region *mem_map = imx8m_mem_map;
+ 
+-__weak phys_size_t get_dram_size(void) {
+-    return PHYS_SDRAM_SIZE;
+-}
+-
+ void enable_caches(void)
+ {
+-	imx8m_mem_map[5].size = get_dram_size();
++	imx8m_mem_map[5].size = gd->bd->bi_dram[0].size;
++	imx8m_mem_map[6].size = gd->bd->bi_dram[1].size;
+ 
+-	/* If OPTEE runs, remove OPTEE memory from MMU table to avoid speculative prefetch */
+-	if (rom_pointer[1]) {
+-		imx8m_mem_map[5].size -= rom_pointer[1];
+-	}
++	if(!gd->bd->bi_dram[1].size)
++		imx8m_mem_map[6].attrs = 0;
+ 
+ 	icache_enable();
+ 	dcache_enable();
+diff --git a/arch/arm/mach-imx/misc.c b/arch/arm/mach-imx/misc.c
+index 356e5f6..5fd30c8 100644
+--- a/arch/arm/mach-imx/misc.c
++++ b/arch/arm/mach-imx/misc.c
+@@ -105,6 +105,8 @@ void board_lmb_reserve(struct lmb *lmb)
+ 	for (bank = 0; bank < CONFIG_NR_DRAM_BANKS; bank++) {
+ 		if (sp < gd->bd->bi_dram[bank].start)
+ 			continue;
++		if (!gd->bd->bi_dram[bank].size)
++			continue;
+ 		bank_end = gd->bd->bi_dram[bank].start +
+ 			gd->bd->bi_dram[bank].size;
+ 		if (sp >= bank_end)
+diff --git a/board/compulab/cl-som-imx8/cl-som-imx8.c b/board/compulab/cl-som-imx8/cl-som-imx8.c
+index 4b0c12c..ec1455c 100644
+--- a/board/compulab/cl-som-imx8/cl-som-imx8.c
++++ b/board/compulab/cl-som-imx8/cl-som-imx8.c
+@@ -64,8 +64,7 @@ static phys_size_t imx8_ddr_size(void)
+ 
+     switch (value) {
+     case 4096:
+-        value = 3084;
+-    case 3084:
++    case 3072:
+     case 2048:
+     case 1536:
+     case 1024:
+@@ -83,8 +82,10 @@ static phys_size_t imx8_ddr_size(void)
+ phys_size_t get_effective_memsize(void)
+ {
+     phys_size_t ram_size = imx8_ddr_size();
++
+     if (rom_pointer[1])
+         ram_size -= rom_pointer[1];
++
+     return ram_size;
+ }
+ 
+@@ -96,8 +97,21 @@ int dram_init(void)
+ 
+ int dram_init_banksize(void)
+ {
+-    gd->bd->bi_dram[0].start = PHYS_SDRAM;
+-    gd->bd->bi_dram[0].size = imx8_ddr_size();
++    phys_size_t ram_size = get_effective_memsize();
++
++    if ( 0xC0000000 <= ram_size ) {
++        gd->bd->bi_dram[0].start = PHYS_SDRAM;
++        gd->bd->bi_dram[0].size = 0xC0000000;
++
++        gd->bd->bi_dram[1].start = PHYS_SDRAM_2;
++        gd->bd->bi_dram[1].size = ram_size - 0xC0000000;
++    } else {
++        gd->bd->bi_dram[0].start = PHYS_SDRAM;
++        gd->bd->bi_dram[0].size = ram_size;
++
++        gd->bd->bi_dram[1].start = 0;
++        gd->bd->bi_dram[1].size = 0;
++    }
+ 
+     return 0;
+ }
+@@ -105,6 +119,16 @@ int dram_init_banksize(void)
+ phys_size_t get_dram_size(void) {
+     return imx8_ddr_size();
+ }
++
++/* Get the top of usable RAM */
++ulong board_get_usable_ram_top(ulong total_size)
++{
++    if ( gd->ram_top > PHYS_SDRAM_2 )
++        gd->ram_top = PHYS_SDRAM_2;
++
++    return gd->ram_top;
++}
++
+ #ifdef CONFIG_OF_BOARD_SETUP
+ int ft_board_setup(void *blob, bd_t *bd)
+ {
+diff --git a/include/configs/cl-som-imx8.h b/include/configs/cl-som-imx8.h
+index 24b45f6..7ea0e65 100644
+--- a/include/configs/cl-som-imx8.h
++++ b/include/configs/cl-som-imx8.h
+@@ -152,11 +152,18 @@
+ #define CONFIG_SYS_MALLOC_LEN		((CONFIG_ENV_SIZE + (2*1024) + (16*1024)) * 1024)
+ 
+ #define CONFIG_SYS_SDRAM_BASE           0x40000000
++
+ #define PHYS_SDRAM                      0x40000000
++#define PHYS_SDRAM_2			0x100000000
++/* This value will be recalculated using the ddr detection code */
++
+ /* This value will be recalculated using the ddr detection code */
+ #define PHYS_SDRAM_SIZE			0x40000000
++#define PHYS_SDRAM_2_SIZE		0x0
++
++#define PHYS_SDRAM_SIZE			0x40000000
+ 
+-#define CONFIG_NR_DRAM_BANKS		1
++#define CONFIG_NR_DRAM_BANKS		2
+ 
+ #define CONFIG_SYS_MEMTEST_START    PHYS_SDRAM
+ #define CONFIG_SYS_MEMTEST_END      (CONFIG_SYS_MEMTEST_START + (PHYS_SDRAM_SIZE >> 1))
+-- 
+1.9.1
+
