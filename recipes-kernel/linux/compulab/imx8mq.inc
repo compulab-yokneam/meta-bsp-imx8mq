@@ -33,5 +33,14 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0031-cl-som-imx8-dts-Added-sbc-imx8-dp.dts.patch \
 	file://0032-cl-som-imx8-defconfig-Update-config.patch \
 	file://0033-cl-som-imx8-dts-Added-sbc-imx8-no-wp.dts.patch \
+	file://0034-cl-som-imx8-dts-Add-sbc-imx8-emmc-low.dts-and-others.patch \
+	file://0035-cl-som-imx8-mach-Remove-unused-stuff.patch \
+	file://0036-cl-som-imx8-dts-Remove-a-legacy-fw-configuration.patch \
+	file://0037-compulab-imx8mq-dtsi-Remove-ecspi1-pinmux.patch \
+	file://0038-compulab-imx8mq-dtsi-Remove-uart4-configuration.patch \
+	file://0039-compulab-imx8mq-dtsi-Update-uart3-configuration.patch \
+	file://0040-compulab-imx8mq-dtsi-Make-use-of-USDHC1_RESET_B.patch \
+	file://0041-compulab-imx8mq-dtsi-Line-up-A53-operation-points-vo.patch \
+	file://0042-cl-som-imx8-defconfig-Update-config.patch \
 	file://defconfig \
 "

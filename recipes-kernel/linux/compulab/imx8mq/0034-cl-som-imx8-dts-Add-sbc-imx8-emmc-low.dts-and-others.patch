@@ -1,0 +1,458 @@
+From 7a32242f4da1852860c76a0b31ba77cf3f064ba1 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Wed, 29 Apr 2020 20:34:15 +0300
+Subject: [PATCH 34/42] cl-som-imx8: dts: Add sbc-imx8-emmc-low.dts and others
+
+1) sbc-imx8-emmc-low.dts -- low speed emmc 50MHz only; auto
+2) sbc-imx8-empty.dts -- reduced configuration dts; manual
+3) sbc-imx8-tiny.dts -- redeuced configuration + emmc; manual
+4) sbc-imx8-gpio.dts -- add P20 header gpio configuration; manual
+5) sbc-imx8-no-emmc.dts -- no emmc configuration; manual
+6) sbc-imx8-no-hdmi.dts -- no hdmi configuration; manual
+7) sbc-imx8-no-pcie1.dts -- no pcie1 configuration; manual
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm64/boot/dts/compulab/Makefile              |   1 +
+ arch/arm64/boot/dts/compulab/sbc-imx8-emmc-low.dts |  19 ++++
+ arch/arm64/boot/dts/compulab/sbc-imx8-empty.dts    | 119 ++++++++++++++++++++
+ arch/arm64/boot/dts/compulab/sbc-imx8-gpio.dts     |  44 ++++++++
+ arch/arm64/boot/dts/compulab/sbc-imx8-no-emmc.dts  |  19 ++++
+ arch/arm64/boot/dts/compulab/sbc-imx8-no-hdmi.dts  |  19 ++++
+ arch/arm64/boot/dts/compulab/sbc-imx8-no-pcie1.dts |  24 ++++
+ arch/arm64/boot/dts/compulab/sbc-imx8-tiny.dts     | 125 +++++++++++++++++++++
+ 8 files changed, 370 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/compulab/sbc-imx8-emmc-low.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/sbc-imx8-empty.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/sbc-imx8-gpio.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/sbc-imx8-no-emmc.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/sbc-imx8-no-hdmi.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/sbc-imx8-no-pcie1.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/sbc-imx8-tiny.dts
+
+diff --git a/arch/arm64/boot/dts/compulab/Makefile b/arch/arm64/boot/dts/compulab/Makefile
+index ea53ccd..8dc7571 100644
+--- a/arch/arm64/boot/dts/compulab/Makefile
++++ b/arch/arm64/boot/dts/compulab/Makefile
+@@ -9,6 +9,7 @@ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-no-edid.dtb
+ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-dp.dtb
+ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-m4.dtb
+ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-no-wp.dtb
++dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-emmc-low.dtb
+ 
+ always		:= $(dtb-y)
+ subdir-y	:= $(dts-dirs)
+diff --git a/arch/arm64/boot/dts/compulab/sbc-imx8-emmc-low.dts b/arch/arm64/boot/dts/compulab/sbc-imx8-emmc-low.dts
+new file mode 100644
+index 00000000..da2a8fb
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sbc-imx8-emmc-low.dts
+@@ -0,0 +1,19 @@
++#include "cl-som-imx8.dts"
++#include "sb-imx8.dtsi"
++
++/ {
++    model = "CompuLab CL-SOM-iMX8 rev1.1 on SBC-iMX8";
++    compatible = "compulab,sbc-imx8", "compulab,cl-som-imx8,rev1.1", "compulab,cl-som-imx8", "fsl,imx8mq";
++};
++
++/* usb hub is on */
++&reg_usb_mux {
++    enable-active-low;
++};
++
++&usdhc1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_usdhc1>;
++	/delete-property/ pinctrl-1;
++	/delete-property/ pinctrl-2;
++};
+diff --git a/arch/arm64/boot/dts/compulab/sbc-imx8-empty.dts b/arch/arm64/boot/dts/compulab/sbc-imx8-empty.dts
+new file mode 100644
+index 00000000..70b9684
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sbc-imx8-empty.dts
+@@ -0,0 +1,119 @@
++/*
++ * Copyright (C) 2018 CopuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include "cl-som-imx8.dts"
++#include "sb-imx8.dtsi"
++
++/ {
++    model = "CompuLab CL-SOM-iMX8 rev1.1 on SBC-iMX8 (tiny)";
++    compatible = "compulab,sbc-imx8", "compulab,cl-som-imx8,rev1.1", "compulab,cl-som-imx8", "fsl,imx8mq";
++};
++
++/* usb hub is on */
++&reg_usb_mux {
++    enable-active-low;
++};
++
++&fec1 {
++	status = "disabled";
++};
++
++&pcie1 {
++	status = "disabled";
++};
++
++&dcss {
++	status = "disabled";
++};
++
++&hdmi {
++	status = "disabled";
++};
++
++&ecspi3 {
++	status = "disabled";
++
++};
++
++&usb3_phy0 {
++	status = "disabled";
++};
++
++&usb3_0 {
++	status = "disabled";
++};
++
++&usb_dwc3_0 {
++	status = "disabled";
++};
++
++&usb3_phy1 {
++	status = "disabled";
++};
++
++&usb3_1 {
++	status = "disabled";
++};
++
++&usb_dwc3_1 {
++	status = "disabled";
++};
++
++&sai2 {
++	status = "disabled";
++};
++
++&sai4 {
++	status = "disabled";
++};
++
++&spdif1 {
++	status = "disabled";
++};
++
++&spdif2 {
++	status = "disabled";
++};
++
++&gpu {
++	status = "disabled";
++};
++
++&vpu {
++	status = "disabled";
++};
++
++&mu {
++	status = "disabled";
++};
++
++&i2c1 {
++	status = "disabled";
++};
++
++&i2c2 {
++	status = "disabled";
++};
++
++&wm8731 {
++    status = "disabled";
++};
++
++&usdhc1 {
++    status = "disabled";
++};
++
++&usdhc2 {
++    status = "disabled";
++};
+diff --git a/arch/arm64/boot/dts/compulab/sbc-imx8-gpio.dts b/arch/arm64/boot/dts/compulab/sbc-imx8-gpio.dts
+new file mode 100644
+index 00000000..2e7144a
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sbc-imx8-gpio.dts
+@@ -0,0 +1,44 @@
++/*
++ * Copyright (C) 2019 CopuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include "sbc-imx8.dts"
++
++/ {
++	cgpio: control_gpio {
++		compatible = "cpl,cgpio";
++		status = "disabled";
++	};
++
++};
++
++&iomuxc {
++	sb-imx8-aux {
++		pinctrl_cgpio: cgpio1group {
++			fsl,pins = <
++				/* gpio: 77 76 75 74 */
++				/* P20:  20 22 24 26 */
++				MX8MQ_IOMUXC_NAND_DATA07_GPIO3_IO13	0x1c 
++				MX8MQ_IOMUXC_NAND_DATA06_GPIO3_IO12	0x1c 
++				MX8MQ_IOMUXC_NAND_DATA05_GPIO3_IO11	0x1c 
++				MX8MQ_IOMUXC_NAND_DATA04_GPIO3_IO10	0x1c 
++			>;
++		};
++	};
++};
++
++&cgpio {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_cgpio>;
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/compulab/sbc-imx8-no-emmc.dts b/arch/arm64/boot/dts/compulab/sbc-imx8-no-emmc.dts
+new file mode 100644
+index 00000000..db033b4
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sbc-imx8-no-emmc.dts
+@@ -0,0 +1,19 @@
++/*
++ * Copyright (C) 2019 CopuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include "sbc-imx8.dts"
++
++&usdhc1 {
++	status = "disabled";
++};
+diff --git a/arch/arm64/boot/dts/compulab/sbc-imx8-no-hdmi.dts b/arch/arm64/boot/dts/compulab/sbc-imx8-no-hdmi.dts
+new file mode 100644
+index 00000000..f3c7ff3
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sbc-imx8-no-hdmi.dts
+@@ -0,0 +1,19 @@
++/*
++ * Copyright (C) 2019 CopuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include "sbc-imx8.dts"
++
++&hdmi {
++	status = "disabled";
++};
+diff --git a/arch/arm64/boot/dts/compulab/sbc-imx8-no-pcie1.dts b/arch/arm64/boot/dts/compulab/sbc-imx8-no-pcie1.dts
+new file mode 100644
+index 00000000..1d84233
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sbc-imx8-no-pcie1.dts
+@@ -0,0 +1,24 @@
++/*
++ * Copyright (C) 2019 CopuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include "sbc-imx8.dts"
++
++/ {
++    model = "CompuLab CL-SOM-iMX8 rev1.1 on SBC-iMX8 (no-pcie1)";
++    compatible = "compulab,sbc-imx8", "compulab,cl-som-imx8,rev1.1", "compulab,cl-som-imx8", "fsl,imx8mq";
++};
++
++&pcie1 {
++	status = "disabled";
++};
+diff --git a/arch/arm64/boot/dts/compulab/sbc-imx8-tiny.dts b/arch/arm64/boot/dts/compulab/sbc-imx8-tiny.dts
+new file mode 100644
+index 00000000..ace9ce0
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sbc-imx8-tiny.dts
+@@ -0,0 +1,125 @@
++/*
++ * Copyright (C) 2018 CopuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include "cl-som-imx8.dts"
++#include "sb-imx8.dtsi"
++
++/ {
++    model = "CompuLab CL-SOM-iMX8 rev1.1 on SBC-iMX8 (tiny)";
++    compatible = "compulab,sbc-imx8", "compulab,cl-som-imx8,rev1.1", "compulab,cl-som-imx8", "fsl,imx8mq";
++};
++
++/* usb hub is on */
++&reg_usb_mux {
++    enable-active-low;
++};
++
++/* The modules w/out WB must use this device tree file */
++
++&fec1 {
++	status = "disabled";
++};
++
++&pcie0 {
++	status = "disabled";
++};
++
++&pcie1 {
++	status = "disabled";
++};
++
++&dcss {
++	status = "disabled";
++};
++
++&hdmi {
++	status = "disabled";
++};
++
++&ecspi3 {
++	status = "disabled";
++
++};
++
++&usb3_phy0 {
++	status = "disabled";
++};
++
++&usb3_0 {
++	status = "disabled";
++};
++
++&usb_dwc3_0 {
++	status = "disabled";
++};
++
++&usb3_phy1 {
++	status = "disabled";
++};
++
++&usb3_1 {
++	status = "disabled";
++};
++
++&usb_dwc3_1 {
++	status = "disabled";
++};
++
++&sai2 {
++	status = "disabled";
++};
++
++&sai4 {
++	status = "disabled";
++};
++
++&spdif1 {
++	status = "disabled";
++};
++
++&spdif2 {
++	status = "disabled";
++};
++
++&gpu {
++	status = "disabled";
++};
++
++&vpu {
++	status = "disabled";
++};
++
++&mu {
++	status = "disabled";
++};
++
++&i2c1 {
++	status = "disabled";
++};
++
++&i2c2 {
++	status = "disabled";
++};
++
++&wm8731 {
++    status = "disabled";
++};
++
++&usdhc2 {
++    status = "disabled";
++};
++
++&simple_sound {
++    status = "disabled";
++};
+-- 
+1.9.1
+

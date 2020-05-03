@@ -1,0 +1,49 @@
+From c19f4a77bf96abfbb0a8c555e851722c044fb617 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Wed, 29 Apr 2020 20:59:10 +0300
+Subject: [PATCH 38/42] compulab-imx8mq: dtsi: Remove uart4 configuration
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm64/boot/dts/compulab/compulab-imx8mq.dtsi | 18 ------------------
+ 1 file changed, 18 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/compulab/compulab-imx8mq.dtsi b/arch/arm64/boot/dts/compulab/compulab-imx8mq.dtsi
+index eafbfc1..551c1f0 100644
+--- a/arch/arm64/boot/dts/compulab/compulab-imx8mq.dtsi
++++ b/arch/arm64/boot/dts/compulab/compulab-imx8mq.dtsi
+@@ -254,15 +254,6 @@
+ 			>;
+ 		};
+ 
+-		pinctrl_uart4: uart4grp {
+-			fsl,pins = <
+-				MX8MQ_IOMUXC_ECSPI2_MOSI_UART4_DCE_TX		0x79
+-				MX8MQ_IOMUXC_ECSPI2_SCLK_UART4_DCE_RX		0x79
+-				MX8MQ_IOMUXC_ECSPI2_MISO_UART4_DCE_CTS_B	0x79
+-				MX8MQ_IOMUXC_ECSPI2_SS0_UART4_DCE_RTS_B		0x79
+-			>;
+-		};
+-
+ 		pinctrl_usdhc1_gpio: usdhc1grpgpio {
+ 			fsl,pins = <
+ 				MX8MQ_IOMUXC_SD1_RESET_B_GPIO2_IO10	0x1c
+@@ -543,15 +534,6 @@
+ 	status = "okay";
+ };
+ 
+-&uart4 { /* BT */
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_uart4>;
+-	assigned-clocks = <&clk IMX8MQ_CLK_UART4>;
+-	assigned-clock-parents = <&clk IMX8MQ_CLK_25M>;
+-	fsl,uart-has-rtscts;
+-	status = "okay";
+-};
+-
+ &dcss {
+ 	status = "okay";
+ 
+-- 
+1.9.1
+
