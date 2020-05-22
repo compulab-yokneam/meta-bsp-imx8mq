@@ -46,7 +46,6 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0045-cl-som-imx8-spl-pmic-Add-comments-and-macro.patch \
 	file://0046-cl-som-imx8-spl-Remove-unused-stuff.patch \
 	file://0047-cl-som-imx8-ddr-Some-small-cleanup-and-refactoring.patch \
-	file://0048-fwcall-Enable-psci-reset.patch \
 	file://0049-cl-som-imx8-dts-Add-linaro-optee-descriptor.patch \
 	file://0050-cl-som-imx8-dts-Configure-gpio156.patch \
 	file://0051-cl-som-imx8-dts-Clean-up-uart3-pinmux.patch \
