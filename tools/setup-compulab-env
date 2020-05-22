@@ -44,7 +44,7 @@ eof
 mod_local() {
 # Modify local.conf
 CORE_IMAGE_EXTRA_INSTALL+=" dhcp-client imx-gpu-viv-demos "
-CORE_IMAGE_EXTRA_INSTALL+=" cl-migenv cl-uboot cl-deploy cl-stest cl-launcher cl-camera u-boot-fw-utils "
+CORE_IMAGE_EXTRA_INSTALL+=" cl-migenv cl-uboot cl-deploy cl-stest cl-launcher cl-camera u-boot-fslc-fw-utils "
 CORE_IMAGE_EXTRA_INSTALL+=" memtester htop iotop tmux iperf3 "
 CORE_IMAGE_EXTRA_INSTALL+=" sysbench stress-ng "
 IMAGE_FEATURES+=" package-management ssh-server-openssh "
