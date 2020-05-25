@@ -1,0 +1,82 @@
+From a9d9cd50c23a7bb8fe4dde6db15bb14258dc37c3 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Sun, 24 May 2020 09:52:39 +0300
+Subject: [PATCH 57/58] cl-som-imx8: Add user env dev/part handling
+
+1) Add user env dev/part handling
+2) Add bootdev env variable
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ board/compulab/cl-som-imx8/cl-som-imx8.c | 40 +++++++++++++++++++++++++++-----
+ 1 file changed, 34 insertions(+), 6 deletions(-)
+
+diff --git a/board/compulab/cl-som-imx8/cl-som-imx8.c b/board/compulab/cl-som-imx8/cl-som-imx8.c
+index ec1455c..522ae83 100644
+--- a/board/compulab/cl-som-imx8/cl-som-imx8.c
++++ b/board/compulab/cl-som-imx8/cl-som-imx8.c
+@@ -364,27 +364,55 @@ int board_init(void)
+ 
+ int board_mmc_get_env_dev(int devno)
+ {
+-	const char *s = env_get("atp");
+-	if (s != NULL) {
+-		printf("ATP Mode: Save environmet on eMMC\n");
+-		return CONFIG_SYS_MMC_ENV_DEV;
++	const ulong user_env_devno = env_get_hex("env_dev", ULONG_MAX);
++	if (user_env_devno != ULONG_MAX) {
++		printf("User Environment dev# is (%lu)\n", user_env_devno);
++		return (int)user_env_devno;
+ 	}
+ 	return devno;
+ }
+ 
++static int _mmc_get_env_part(void)
++{
++	const ulong user_env_part = env_get_hex("env_part", ULONG_MAX);
++	if (user_env_part != ULONG_MAX) {
++		printf("User Environment part# is (%lu)\n", user_env_part);
++		return (int)user_env_part;
++	}
++	return CONFIG_SYS_MMC_ENV_PART;
++}
++
+ uint mmc_get_env_part(struct mmc *mmc)
+ {
+-	if (get_boot_device() == MMC1_BOOT)
+-		return CONFIG_SYS_MMC_ENV_PART;
++	if (mmc->part_support)
++		_mmc_get_env_part();
+ 
+ 	return 0;
+ }
+ 
++static void board_bootdev_init(void)
++{
++	u32 bootdev = get_boot_device();
++	switch (bootdev) {
++	case MMC1_BOOT:
++		bootdev = 0;
++		break;
++	case SD2_BOOT:
++		bootdev = 1;
++		break;
++	default:
++		env_set("bootdev", NULL);
++		return;
++	}
++	env_set_ulong("bootdev", bootdev);
++}
++
+ int board_late_init(void)
+ {
+ 
+ #ifdef CONFIG_ENV_IS_IN_MMC
+ 	board_late_mmc_env_init();
++	board_bootdev_init();
+ #endif
+ 
+ 	return 0;
+-- 
+1.9.1
+
