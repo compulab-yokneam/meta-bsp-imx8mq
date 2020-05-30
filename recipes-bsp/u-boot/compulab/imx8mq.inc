@@ -55,6 +55,7 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0055-cl-som-imx8-dts-Add-usdhc1-regulator-off-on-delay-us.patch \
 	file://0056-cl-som-imx8-Add-Kingston-4g-ddr-suppor.patch \
 	file://0057-cl-som-imx8-Add-user-env-dev-part-handling.patch \
+	file://0058-cl-som-imx8-Fix-user-env-dev-part-handling.patch \
 "
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"

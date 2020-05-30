@@ -1,0 +1,26 @@
+From 40c1cd530500ae6a61dc1da0cc4f82386bbc244c Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Sat, 30 May 2020 20:28:39 +0300
+Subject: [PATCH 58/58] cl-som-imx8: Fix user env dev/part handling
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ board/compulab/cl-som-imx8/cl-som-imx8.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/board/compulab/cl-som-imx8/cl-som-imx8.c b/board/compulab/cl-som-imx8/cl-som-imx8.c
+index 522ae836f5..c10ccff91f 100644
+--- a/board/compulab/cl-som-imx8/cl-som-imx8.c
++++ b/board/compulab/cl-som-imx8/cl-som-imx8.c
+@@ -385,7 +385,7 @@ static int _mmc_get_env_part(void)
+ uint mmc_get_env_part(struct mmc *mmc)
+ {
+ 	if (mmc->part_support)
+-		_mmc_get_env_part();
++	    return _mmc_get_env_part();
+ 
+ 	return 0;
+ }
+-- 
+2.11.0
+
