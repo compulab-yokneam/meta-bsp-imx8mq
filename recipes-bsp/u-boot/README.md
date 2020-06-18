@@ -4,6 +4,8 @@
 * LPDDR4 memory type recognition by means of mr[5-8].
 * Supports all available CompuLab memory configurations.
 * Supports the NXP 2-op/3-op revisions.
+* Adresses the mismatch between the U-Boot and the Kernel at the handling bus frequency update.
+<br>Details: [Kernel](https://source.codeaurora.org/external/imx/linux-imx/tree/drivers/soc/imx/busfreq-imx8mq.c?h=rel_imx_4.14.98_2.0.0_ga#n119), [U-Boot](https://github.com/compulab-yokneam/meta-bsp-imx8mq/blob/devel-next/recipes-bsp/u-boot/compulab/imx8mq/0033-cl-som-imx8-ddr-2-nd-major-ddr-code-refactoring.patch#L163)
 * Saves the boot environment on the boot media at this location:
 
 | offset | size |
