@@ -41,6 +41,10 @@ BBLAYERS += " \\
 eof
 }
 
+mod_package_class() {
+sed -i 's/\(PACKAGE_CLASSES \).*/\1 = "package_deb package_tar"/g' ${LOCAL_CONF}
+}
+
 mod_local() {
 # Modify local.conf
 CORE_IMAGE_EXTRA_INSTALL+=" dhcp-client imx-gpu-viv-demos "
@@ -54,6 +58,7 @@ IMAGE_FEATURES += "${IMAGE_FEATURES}"
 LICENSE_FLAGS_WHITELIST = "commercial"
 PREFERRED_RPROVIDER_u-boot-fw-utils = "u-boot-fslc-fw-utils"
 eof
+mod_package_class
 }
 
 CWD=$(pwd)
