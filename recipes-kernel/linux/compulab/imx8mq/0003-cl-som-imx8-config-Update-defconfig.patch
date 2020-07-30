@@ -1,0 +1,43 @@
+From cabcfa98e629071abfd3e3fbebc1b169c85dc966 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Fri, 17 Jul 2020 23:55:32 +0300
+Subject: [PATCH 3/6] cl-som-imx8: config: Update defconfig
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm64/configs/cl-som-imx8_defconfig | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/arch/arm64/configs/cl-som-imx8_defconfig b/arch/arm64/configs/cl-som-imx8_defconfig
+index 0bfc48bc0748..4ef647f54710 100644
+--- a/arch/arm64/configs/cl-som-imx8_defconfig
++++ b/arch/arm64/configs/cl-som-imx8_defconfig
+@@ -425,9 +425,6 @@ CONFIG_REGULATOR_QCOM_SPMI=y
+ CONFIG_REGULATOR_RK808=y
+ CONFIG_REGULATOR_S2MPS11=y
+ CONFIG_REGULATOR_VCTRL=m
+-CONFIG_RC_CORE=m
+-CONFIG_RC_DECODERS=y
+-CONFIG_RC_DEVICES=y
+ CONFIG_MEDIA_SUPPORT=y
+ CONFIG_MEDIA_CAMERA_SUPPORT=y
+ CONFIG_MEDIA_CONTROLLER=y
+@@ -441,7 +438,6 @@ CONFIG_VIDEO_MXC_CSI_CAMERA=y
+ CONFIG_MXC_MIPI_CSI=y
+ CONFIG_MXC_CAMERA_OV5640_MIPI_V2=y
+ CONFIG_V4L_MEM2MEM_DRIVERS=y
+-# CONFIG_VIDEO_IR_I2C is not set
+ CONFIG_VIDEO_OV5640=y
+ CONFIG_IMX_DPU_CORE=y
+ CONFIG_IMX_LCDIF_CORE=y
+@@ -456,7 +452,6 @@ CONFIG_DRM_PANEL_RAYDIUM_RM67191=y
+ CONFIG_DRM_NWL_MIPI_DSI=y
+ CONFIG_DRM_CDNS_HDMI_CEC=y
+ CONFIG_DRM_DW_HDMI_I2S_AUDIO=y
+-# CONFIG_DRM_I2C_SN65DSI83 is not set
+ CONFIG_DRM_IMX=y
+ CONFIG_DRM_IMX_PARALLEL_DISPLAY=y
+ CONFIG_DRM_IMX_TVE=y
+-- 
+2.11.0
+

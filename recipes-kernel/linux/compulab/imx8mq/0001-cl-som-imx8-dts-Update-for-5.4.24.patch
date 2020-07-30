@@ -1,0 +1,200 @@
+From e0d06bf11d053f62cdad21da8432e1260f4656c2 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Fri, 17 Jul 2020 23:54:19 +0300
+Subject: [PATCH 1/6] cl-som-imx8: dts: Update for 5.4.24
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm64/boot/dts/compulab/Makefile             |  1 +
+ arch/arm64/boot/dts/compulab/cl-som-imx8.dts      | 13 ++++-
+ arch/arm64/boot/dts/compulab/compulab-imx8mq.dtsi | 65 ++++++++++++++---------
+ arch/arm64/boot/dts/compulab/sbc-imx8-thermal.dts |  4 +-
+ arch/arm64/boot/dts/freescale/imx8mq.dtsi         |  2 +-
+ 5 files changed, 56 insertions(+), 29 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/compulab/Makefile b/arch/arm64/boot/dts/compulab/Makefile
+index 2a7c9d032efa..474f4895f7d6 100644
+--- a/arch/arm64/boot/dts/compulab/Makefile
++++ b/arch/arm64/boot/dts/compulab/Makefile
+@@ -1,5 +1,6 @@
+ dtb-$(CONFIG_ARCH_MXC) += cl-som-imx8.dtb
+ dtb-$(CONFIG_ARCH_MXC) += sbc-imx8.dtb
++dtb-$(CONFIG_ARCH_MXC) += sbc-imx8-thermal.dtb
+ dtb-$(CONFIG_ARCH_MXC) += sbc-imx8-bluetooth.dtb
+ dtb-$(CONFIG_ARCH_MXC) += sbc-imx8-no-edid.dtb
+ dtb-$(CONFIG_ARCH_MXC) += sbc-imx8-dp.dtb
+diff --git a/arch/arm64/boot/dts/compulab/cl-som-imx8.dts b/arch/arm64/boot/dts/compulab/cl-som-imx8.dts
+index 80abe3ef0b94..2430e74aa6ee 100644
+--- a/arch/arm64/boot/dts/compulab/cl-som-imx8.dts
++++ b/arch/arm64/boot/dts/compulab/cl-som-imx8.dts
+@@ -38,6 +38,12 @@
+ 			regulator-always-on;
+ 		};
+ 	};
++
++	pcie1_refclk: pcie0-refclk {
++		compatible = "fixed-clock";
++		#clock-cells = <0>;
++		clock-frequency = <100000000>;
++	};
+ };
+ 
+ &iomuxc {
+@@ -68,9 +74,14 @@
+ 	pinctrl-0 = <&pinctrl_pcie1>;
+ 	reset-gpio = <&gpio4 29 GPIO_ACTIVE_LOW>;
+ 	disable-gpio = <&gpio1 1 GPIO_ACTIVE_LOW>;
++	clocks = <&clk IMX8MQ_CLK_PCIE2_ROOT>,
++		 <&clk IMX8MQ_CLK_PCIE2_AUX>,
++		 <&clk IMX8MQ_CLK_PCIE2_PHY>,
++		 <&pcie1_refclk>;
++	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
+ 	ext_osc = <0>;
+ 	hard-wired = <1>;
+-	status = "okay";
++	status = "disabled";
+ };
+ 
+ &wm8731 {
+diff --git a/arch/arm64/boot/dts/compulab/compulab-imx8mq.dtsi b/arch/arm64/boot/dts/compulab/compulab-imx8mq.dtsi
+index 39a1387e6af6..b19d97ec729e 100644
+--- a/arch/arm64/boot/dts/compulab/compulab-imx8mq.dtsi
++++ b/arch/arm64/boot/dts/compulab/compulab-imx8mq.dtsi
+@@ -193,11 +193,6 @@
+ 	};
+ };
+ 
+-&clk {
+-	assigned-clocks = <&clk IMX8MQ_AUDIO_PLL1>, <&clk IMX8MQ_AUDIO_PLL2>;
+-	assigned-clock-rates = <786432000>, <722534400>;
+-};
+-
+ &iomuxc {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_hog>;
+@@ -562,16 +557,6 @@
+ 	status = "okay";
+ };
+ 
+-&dcss {
+-	status = "okay";
+-
+-	disp-dev = "hdmi_disp";
+-};
+-
+-&hdmi {
+-	status = "okay";
+-};
+-
+ &ecspi3 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_ecspi3>;
+@@ -623,12 +608,17 @@
+ };
+ 
+ &sai2 {
+-	#sound-dai-cells = <0>;
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_sai2>;
+ 	assigned-clocks = <&clk IMX8MQ_CLK_SAI2>;
+ 	assigned-clock-parents = <&clk IMX8MQ_AUDIO_PLL1_OUT>;
+-	assigned-clock-rates = <24576000>;
++	assigned-clock-rates = <49152000>;
++	clocks = <&clk IMX8MQ_CLK_SAI2_IPG>, <&clk IMX8MQ_CLK_DUMMY>,
++		<&clk IMX8MQ_CLK_SAI2_ROOT>, <&clk IMX8MQ_CLK_DUMMY>,
++		<&clk IMX8MQ_CLK_DUMMY>, <&clk IMX8MQ_AUDIO_PLL1_OUT>,
++		<&clk IMX8MQ_AUDIO_PLL2_OUT>;
++	clock-names = "bus", "mclk0", "mclk1", "mclk2", "mclk3", "pll8k", "pll11k";
++	fsl,sai-asynchronous;
+ 	status = "okay";
+ };
+ 
+@@ -668,11 +658,7 @@
+ 	power-supply = <&sw1c_reg>;
+ };
+ 
+-&gpu {
+-	status = "okay";
+-};
+-
+-&vpu {
++&snvs_pwrkey {
+ 	status = "okay";
+ };
+ 
+@@ -683,10 +669,39 @@
+ 	status = "okay";
+ };
+ 
+-&mu {
++&A53_0 {
++	/delete-property/ dc-supply;
++};
++
++&vpu {
+ 	status = "okay";
+ };
+ 
+-&A53_0 {
+-	/delete-property/ dc-supply;
++&gpu3d {
++	status = "okay";
++};
++
++&irqsteer {
++	status = "okay";
++};
++
++&dcss {
++	status = "okay";
++
++	port@0 {
++		dcss_out: endpoint {
++			  remote-endpoint = <&hdmi_in>;
++		};
++	};
++};
++
++&hdmi {
++	compatible = "cdn,imx8mq-hdmi";
++	lane-mapping = <0xe4>;
++	status = "okay";
++	port@1 {
++		hdmi_in: endpoint {
++			remote-endpoint = <&dcss_out>;
++		};
++	};
+ };
+diff --git a/arch/arm64/boot/dts/compulab/sbc-imx8-thermal.dts b/arch/arm64/boot/dts/compulab/sbc-imx8-thermal.dts
+index b67eb1909eff..289832f24f89 100644
+--- a/arch/arm64/boot/dts/compulab/sbc-imx8-thermal.dts
++++ b/arch/arm64/boot/dts/compulab/sbc-imx8-thermal.dts
+@@ -5,10 +5,10 @@
+     compatible = "compulab,sbc-imx8", "compulab,cl-som-imx8,rev1.1", "compulab,cl-som-imx8", "fsl,imx8mq";
+ };
+ 
+-&cpu_alert0 {
++&cpu_alert {
+        temperature = <125000>;
+ };
+ 
+-&cpu_crit0 {
++&cpu_crit {
+        temperature = <165000>;
+ };
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq.dtsi b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
+index 5943d2ed653d..b961131e070b 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mq.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
+@@ -234,7 +234,7 @@
+ 					type = "passive";
+ 				};
+ 
+-				cpu-crit {
++				cpu_crit: cpu-crit {
+ 					temperature = <90000>;
+ 					hysteresis = <2000>;
+ 					type = "critical";
+-- 
+2.11.0
+
