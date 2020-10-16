@@ -1,0 +1,52 @@
+From a102fa36f988dec05128517da5b43d868b86e44a Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Fri, 16 Oct 2020 11:15:32 +0300
+Subject: [PATCH 60/62] spl: eeprom: Add subind set/get
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ board/compulab/cl-som-imx8/eeprom_spl.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/board/compulab/cl-som-imx8/eeprom_spl.c b/board/compulab/cl-som-imx8/eeprom_spl.c
+index 09a04fda92..3a4b0b001e 100644
+--- a/board/compulab/cl-som-imx8/eeprom_spl.c
++++ b/board/compulab/cl-som-imx8/eeprom_spl.c
+@@ -77,6 +77,10 @@ static int cl_eeprom_write(uint offset, uchar *buf, int len)
+ #define BOARD_DDRINFO_SIZE 4
+ static u32 board_ddrinfo = 0xdeadbeef;
+ 
++#define BOARD_DDRSUBIND_OFFSET 0x44
++#define BOARD_DDRSUBIND_SIZE 1
++static u8 board_ddrsubind = 0xff;
++
+ #define BOARD_DRATE_OFFSET 0x50
+ #define BOARD_DRATE_SIZE 4
+ static u32 board_drate = 0xdeadbeef;
+@@ -127,6 +131,23 @@ u32 cl_eeprom_set_drate(u32 drate, unsigned int r, unsigned int c)
+ 	return board_drate;
+ };
+ 
++u8 cl_eeprom_get_subind(void)
++{
++	if (cl_eeprom_read(BOARD_DDRSUBIND_OFFSET, (uchar *)&board_ddrsubind, BOARD_DDRSUBIND_SIZE))
++		return 0xff;
++
++	return board_ddrsubind;
++};
++
++u8 cl_eeprom_set_subind(u8 ddrsubind)
++{
++	if (cl_eeprom_write(BOARD_DDRSUBIND_OFFSET, (uchar *)&ddrsubind, BOARD_DDRSUBIND_SIZE))
++		return 0xff;
++	board_ddrsubind = ddrsubind;
++
++	return board_ddrsubind;
++};
++
+ /* override-size ifaces */
+ u32 cl_eeprom_get_osize(void)
+ {
+-- 
+2.11.0
+

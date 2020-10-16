@@ -1,0 +1,38 @@
+From 224b80d5c9d20130a1f5ce49623b35fe00dc37c4 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Fri, 16 Oct 2020 11:12:42 +0300
+Subject: [PATCH 59/62] ddr: imx8m: Add DDR PHY training result
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ drivers/ddr/imx8m/ddrphy_utils.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/ddr/imx8m/ddrphy_utils.c b/drivers/ddr/imx8m/ddrphy_utils.c
+index b7c314ec98..9635176437 100644
+--- a/drivers/ddr/imx8m/ddrphy_utils.c
++++ b/drivers/ddr/imx8m/ddrphy_utils.c
+@@ -14,6 +14,8 @@
+ 
+ #define ddr_printf(args...) debug(args)
+ 
++bool ddrphy_train_pass = false;
++
+ static inline void poll_pmu_message_ready(void)
+ {
+ 	unsigned int reg;
+@@ -97,9 +99,11 @@ void wait_ddrphy_training_complete(void)
+ 			decode_streaming_message();
+ 		} else if (mail == 0x07) {
+ 			printf("Training PASS\n");
++			ddrphy_train_pass = true;
+ 			break;
+ 		} else if (mail == 0xff) {
+ 			printf("Training FAILED\n");
++			ddrphy_train_pass = false;
+ 			break;
+ 		}
+ 	}
+-- 
+2.11.0
+

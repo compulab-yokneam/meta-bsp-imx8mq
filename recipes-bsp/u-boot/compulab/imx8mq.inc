@@ -56,6 +56,10 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0056-cl-som-imx8-Add-Kingston-4g-ddr-suppor.patch \
 	file://0057-cl-som-imx8-Add-user-env-dev-part-handling.patch \
 	file://0058-cl-som-imx8-Fix-user-env-dev-part-handling.patch \
+	file://0059-ddr-imx8m-Add-DDR-PHY-training-result.patch \
+	file://0060-spl-eeprom-Add-subind-set-get.patch \
+	file://0061-cl-som-imx8-Add-Kingston-2g-ddr-support.patch \
+	file://0062-cl-som-imx8-defconfig-Set-local-version-1.4.patch \
 "
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
