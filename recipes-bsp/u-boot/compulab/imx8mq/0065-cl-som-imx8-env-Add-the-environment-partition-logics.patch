@@ -1,0 +1,51 @@
+From e150db0fb8214dc9aa4d5eb8796d4a88e7b7160a Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Thu, 22 Oct 2020 12:30:08 +0300
+Subject: [PATCH 65/65] cl-som-imx8: env: Add the environment partition logics
+
+Take the environment partition from the boot device property:
+
+media : u-boot location : env partition id
+----------------------------------------------------
+sd	user partition	0
+emmc    user partition	0
+emmc    boot0 partition	1
+emmc    boot1 partition	2
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ board/compulab/cl-som-imx8/cl-som-imx8.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/board/compulab/cl-som-imx8/cl-som-imx8.c b/board/compulab/cl-som-imx8/cl-som-imx8.c
+index c10ccff91f..46ae615023 100644
+--- a/board/compulab/cl-som-imx8/cl-som-imx8.c
++++ b/board/compulab/cl-som-imx8/cl-som-imx8.c
+@@ -372,20 +372,20 @@ int board_mmc_get_env_dev(int devno)
+ 	return devno;
+ }
+ 
+-static int _mmc_get_env_part(void)
++static int _mmc_get_env_part(struct mmc *mmc)
+ {
+ 	const ulong user_env_part = env_get_hex("env_part", ULONG_MAX);
+ 	if (user_env_part != ULONG_MAX) {
+ 		printf("User Environment part# is (%lu)\n", user_env_part);
+ 		return (int)user_env_part;
+ 	}
+-	return CONFIG_SYS_MMC_ENV_PART;
++	return EXT_CSD_EXTRACT_BOOT_PART(mmc->part_config);
+ }
+ 
+ uint mmc_get_env_part(struct mmc *mmc)
+ {
+-	if (mmc->part_support)
+-	    return _mmc_get_env_part();
++	if (mmc->part_support && mmc->part_config != MMCPART_NOAVAILABLE)
++	    return _mmc_get_env_part(mmc);
+ 
+ 	return 0;
+ }
+-- 
+2.11.0
+
