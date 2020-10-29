@@ -1,0 +1,61 @@
+From b17dde6ba80a40b00ebf81ba08e8bb3ed3c97051 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Thu, 29 Oct 2020 11:16:59 +0200
+Subject: [PATCH 43/43] cl-som-imx8: dts: Added sbc-imx8-cma.dts
+
+Expand the CMA up to 640Mega.
+Required for playback of high bitrate media files with 4K resolution.
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm64/boot/dts/compulab/Makefile         |  1 +
+ arch/arm64/boot/dts/compulab/sbc-imx8-cma.dts | 25 +++++++++++++++++++++++++
+ 2 files changed, 26 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/compulab/sbc-imx8-cma.dts
+
+diff --git a/arch/arm64/boot/dts/compulab/Makefile b/arch/arm64/boot/dts/compulab/Makefile
+index 8dc7571db270..b1f126f3bee7 100644
+--- a/arch/arm64/boot/dts/compulab/Makefile
++++ b/arch/arm64/boot/dts/compulab/Makefile
+@@ -10,6 +10,7 @@ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-dp.dtb
+ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-m4.dtb
+ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-no-wp.dtb
+ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-emmc-low.dtb
++dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-cma.dtb
+ 
+ always		:= $(dtb-y)
+ subdir-y	:= $(dts-dirs)
+diff --git a/arch/arm64/boot/dts/compulab/sbc-imx8-cma.dts b/arch/arm64/boot/dts/compulab/sbc-imx8-cma.dts
+new file mode 100644
+index 000000000000..156b573f140c
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sbc-imx8-cma.dts
+@@ -0,0 +1,25 @@
++/*
++ * Copyright (C) 2018 CopuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include "sbc-imx8.dts"
++
++&resmem {
++    linux,cma {
++        compatible = "shared-dma-pool";
++        reusable;
++        size = <0 0x28000000>;
++        alloc-ranges = <0 0x40000000 0 0x40000000>;
++        linux,cma-default;
++    };
++};
+-- 
+2.11.0
+

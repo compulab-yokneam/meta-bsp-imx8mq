@@ -42,5 +42,6 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0040-compulab-imx8mq-dtsi-Make-use-of-USDHC1_RESET_B.patch \
 	file://0041-compulab-imx8mq-dtsi-Line-up-A53-operation-points-vo.patch \
 	file://0042-cl-som-imx8-defconfig-Update-config.patch \
+	file://0043-cl-som-imx8-dts-Added-sbc-imx8-cma.dts.patch \
 	file://defconfig \
 "
