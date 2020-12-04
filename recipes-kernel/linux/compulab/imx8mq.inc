@@ -6,4 +6,6 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0004-cl-som-imx8-dts-Enable-mipi-lvds-configurations.patch \
 	file://0005-cl-som-imx8-dts-Merge-compulab-imx8mq.dtsi-into-cl-s.patch \
 	file://0006-cl-som-imx8-defconfig-Update-defconfig.patch \
+	file://0007-cl-som-imx8-config-Enable-IWLWIFI.patch \
+	file://0008-cl-som-imx8-config-Enable-DSA_MICROCHIP_KSZ.patch \
 "
