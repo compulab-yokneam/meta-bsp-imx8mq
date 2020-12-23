@@ -43,5 +43,7 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0041-compulab-imx8mq-dtsi-Line-up-A53-operation-points-vo.patch \
 	file://0042-cl-som-imx8-defconfig-Update-config.patch \
 	file://0043-cl-som-imx8-dts-Added-sbc-imx8-cma.dts.patch \
+	file://0044-cl-som-imx8-dts-Added-sbc-imx8-cma2.dts.patch \
+	file://0045-cl-som-imx8-dts-Fix-sai2-pinmux.patch \
 	file://defconfig \
 "

@@ -1,0 +1,58 @@
+From 68c9ddaad59cccf6f5d3cf470c823369e1874ce0 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Wed, 11 Nov 2020 11:29:47 +0200
+Subject: [PATCH] cl-som-imx8: dts: Added sbc-imx8-cma2.dts
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm64/boot/dts/compulab/Makefile          |  1 +
+ arch/arm64/boot/dts/compulab/sbc-imx8-cma2.dts | 25 +++++++++++++++++++++++++
+ 2 files changed, 26 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/compulab/sbc-imx8-cma2.dts
+
+diff --git a/arch/arm64/boot/dts/compulab/Makefile b/arch/arm64/boot/dts/compulab/Makefile
+index b1f126f3bee7..fe4e35ddeda8 100644
+--- a/arch/arm64/boot/dts/compulab/Makefile
++++ b/arch/arm64/boot/dts/compulab/Makefile
+@@ -11,6 +11,7 @@ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-m4.dtb
+ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-no-wp.dtb
+ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-emmc-low.dtb
+ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-cma.dtb
++dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-cma2.dtb
+ 
+ always		:= $(dtb-y)
+ subdir-y	:= $(dts-dirs)
+diff --git a/arch/arm64/boot/dts/compulab/sbc-imx8-cma2.dts b/arch/arm64/boot/dts/compulab/sbc-imx8-cma2.dts
+new file mode 100644
+index 000000000000..76fb0214523e
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sbc-imx8-cma2.dts
+@@ -0,0 +1,25 @@
++/*
++ * Copyright (C) 2018 CopuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include "sbc-imx8.dts"
++
++&resmem {
++    linux,cma {
++        compatible = "shared-dma-pool";
++        reusable;
++        size = <0 0x38000000>;
++        alloc-ranges = <0 0x40000000 0 0x80000000>;
++        linux,cma-default;
++    };
++};
+-- 
+2.11.0
+
