@@ -1,0 +1,25 @@
+From 0630426999730703ae6f141005b928fc95cef7cd Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Sun, 14 Mar 2021 16:42:44 +0200
+Subject: [PATCH] compulab: mx8mq: ddr: Add 0x01060008 support
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ board/compulab/cl-som-imx8/ddr/ddr.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/board/compulab/cl-som-imx8/ddr/ddr.c b/board/compulab/cl-som-imx8/ddr/ddr.c
+index 53c8b501c4..b9cb53ff3d 100644
+--- a/board/compulab/cl-som-imx8/ddr/ddr.c
++++ b/board/compulab/cl-som-imx8/ddr/ddr.c
+@@ -64,6 +64,7 @@ static const struct lpddr4_desc lpddr4_array_3op[] = {
+ 	{ .name = "Micron",   .id = 0xFF020008, .subind = 0xff, .size = 2048, .timing = &dram_timing_2g_3op },
+ 	{ .name = "Micron",   .id = 0xFF000110, .subind = 0xff, .size = 4096, .timing = &dram_timing_ff000110_4g_3op },
+ 	{ .name = "Samsung",  .id = 0x01050008, .subind = 0xff, .size = 1024, .timing = &dram_timing_1g_3op_low },
++	{ .name = "Samsung",  .id = 0x01060008, .subind = 0xff, .size = 1024, .timing = &dram_timing_1g_3op_low },
+ 	{ .name = "Samsung",  .id = 0x01061010, .subind = 0xff, .size = 2048, .timing = &dram_timing_05_10_2g_3op },
+ 	{ .name = "Nanya",    .id = 0x05000008, .subind = 0xff, .size = 1024, .timing = &dram_timing_1g_3op_low },
+ 	{ .name = "Nanya",    .id = 0x05000010, .subind = 0xff,.size = 2048, .timing = &dram_timing_05_10_2g_3op },
+-- 
+2.11.0
+
