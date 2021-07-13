@@ -8,4 +8,7 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0006-cl-som-imx8-defconfig-Update-defconfig.patch \
 	file://0007-cl-som-imx8-config-Enable-IWLWIFI.patch \
 	file://0008-cl-som-imx8-config-Enable-DSA_MICROCHIP_KSZ.patch \
+	file://0009-imx8mq-Update-platform-clock-subsystem.patch \
+	file://0010-dwc-Update-pcie-implementation.patch \
+	file://0011-cl-som-imx8-Enable-pcie1-with-PLL-clock.patch \
 "
