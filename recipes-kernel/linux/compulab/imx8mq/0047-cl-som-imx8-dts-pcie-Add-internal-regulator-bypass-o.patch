@@ -1,0 +1,69 @@
+From ea048a7dee1f55811a315a7f26021c8f03a27aa9 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Tue, 20 Jul 2021 08:04:08 +0300
+Subject: [PATCH] cl-som-imx8: dts: pcie: Add internal regulator bypass option
+
+Add the fsl,ir-bypass pcie node option.
+Values:
+fsl,ir-bypass = <1> -- to bypass internal regulator;
+fsl,ir-bypass = <0> -- to use internal regulator;
+defaul value <0>.
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm64/boot/dts/compulab/Makefile              |  1 +
+ .../arm64/boot/dts/compulab/sbc-imx8-ir-bypass.dts | 30 ++++++++++++++++++++++
+ 2 files changed, 31 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/compulab/sbc-imx8-ir-bypass.dts
+
+diff --git a/arch/arm64/boot/dts/compulab/Makefile b/arch/arm64/boot/dts/compulab/Makefile
+index fe4e35dd..5532a05 100644
+--- a/arch/arm64/boot/dts/compulab/Makefile
++++ b/arch/arm64/boot/dts/compulab/Makefile
+@@ -12,6 +12,7 @@ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-no-wp.dtb
+ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-emmc-low.dtb
+ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-cma.dtb
+ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-cma2.dtb
++dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += sbc-imx8-ir-bypass.dtb
+ 
+ always		:= $(dtb-y)
+ subdir-y	:= $(dts-dirs)
+diff --git a/arch/arm64/boot/dts/compulab/sbc-imx8-ir-bypass.dts b/arch/arm64/boot/dts/compulab/sbc-imx8-ir-bypass.dts
+new file mode 100644
+index 00000000..dbe843e
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sbc-imx8-ir-bypass.dts
+@@ -0,0 +1,30 @@
++/*
++ * Copyright (C) 2021 CopuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include "sbc-imx8.dts"
++
++/ {
++    model = "CompuLab CL-SOM-iMX8 rev1.1 on SBC-iMX8 (pcie-ir-bypass)";
++    compatible = "compulab,sbc-imx8", "compulab,cl-som-imx8,rev1.1", "compulab,cl-som-imx8", "fsl,imx8mq";
++};
++
++&pcie0 {
++	fsl,ir-bypass = <1>;
++	status = "okay";
++};
++
++&pcie1 {
++	fsl,ir-bypass = <1>;
++	status = "okay";
++};
+-- 
+1.9.1
+

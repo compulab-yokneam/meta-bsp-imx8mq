@@ -1,0 +1,67 @@
+From 89706ad863577c75e3331fea73412e25b8b406aa Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Tue, 20 Jul 2021 08:03:18 +0300
+Subject: [PATCH] pcie: Add internal regulator bypass option
+
+Add the fsl,ir-bypass pcie option.
+Values:
+1 -- to bypass internal regulator;
+0 -- to use internal regulator;
+defaul value is 0.
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ drivers/pci/dwc/pci-imx6.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/drivers/pci/dwc/pci-imx6.c b/drivers/pci/dwc/pci-imx6.c
+index 54459b5..43057b0 100644
+--- a/drivers/pci/dwc/pci-imx6.c
++++ b/drivers/pci/dwc/pci-imx6.c
+@@ -91,6 +91,7 @@ struct imx_pcie {
+ 	u32			tx_swing_low;
+ 	u32			dma_unroll_offset;
+ 	int			link_gen;
++	int			ir_bypass;
+ 	struct regulator	*vpcie;
+ 	struct regmap		*reg_src;
+ 	struct regmap		*reg_gpc;
+@@ -295,6 +296,7 @@ struct imx_pcie {
+ #define IMX8MQ_GPR_PCIE_REF_USE_PAD		BIT(9)
+ #define IMX8MQ_GPR_PCIE_CLK_REQ_OVERRIDE_EN	BIT(10)
+ #define IMX8MQ_GPR_PCIE_CLK_REQ_OVERRIDE	BIT(11)
++#define IMX8MQ_GPR_PCIE_VREG_BYPASS		BIT(12)
+ #define IMX8MQ_ANA_PLLOUT_REG			0x74
+ #define IMX8MQ_ANA_PLLOUT_CKE			BIT(4)
+ #define IMX8MQ_ANA_PLLOUT_SEL_MASK		0xF
+@@ -2418,6 +2420,9 @@ static int imx_pcie_probe(struct platform_device *pdev)
+ 	if (of_property_read_u32(node, "ext_osc", &imx_pcie->ext_osc) < 0)
+ 		imx_pcie->ext_osc = 0;
+ 
++	if (of_property_read_u32(node, "fsl,ir-bypass", &imx_pcie->ir_bypass) < 0)
++		imx_pcie->ir_bypass = 0;
++
+ 	if (imx_pcie->ext_osc && (imx_pcie->variant == IMX6QP)) {
+ 		/* Change the pcie_bus clock to pcie external OSC */
+ 		imx_pcie->pcie_bus = devm_clk_get(&pdev->dev, "pcie_ext");
+@@ -2823,6 +2828,17 @@ static int imx_pcie_probe(struct platform_device *pdev)
+ 				&& (imx_pcie->hard_wired == 0))
+ 			imx_pcie_regions_setup(&pdev->dev);
+ 	}
++
++	if (imx_pcie->variant == IMX8MQ) {
++		if (imx_pcie->ctrl_id == 0)
++			val = IOMUXC_GPR14;
++		else
++			val = IOMUXC_GPR16;
++
++		regmap_update_bits(imx_pcie->iomuxc_gpr, val,
++			IMX8MQ_GPR_PCIE_VREG_BYPASS, ( (imx_pcie->ir_bypass) << 12 ) );
++	}
++
+ 	return 0;
+ }
+ 
+-- 
+1.9.1
+

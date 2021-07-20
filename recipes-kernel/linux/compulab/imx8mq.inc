@@ -45,5 +45,7 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0043-cl-som-imx8-dts-Added-sbc-imx8-cma.dts.patch \
 	file://0044-cl-som-imx8-dts-Added-sbc-imx8-cma2.dts.patch \
 	file://0045-cl-som-imx8-dts-Fix-sai2-pinmux.patch \
+	file://0046-pcie-Add-internal-regulator-bypass-option.patch \
+	file://0047-cl-som-imx8-dts-pcie-Add-internal-regulator-bypass-o.patch \
 	file://defconfig \
 "
