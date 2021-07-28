@@ -65,6 +65,7 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0065-cl-som-imx8-env-Add-the-environment-partition-logics.patch \
 	file://0066-compulab-mx8mq-ddr-Add-0x01060008-support.patch \
 	file://0067-cl-som-imx8-defconfig-Set-local-version-1.5.patch \
+	file://0068-cl-som-imx8-Enable-PCIE_VPH.patch \
 "
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
