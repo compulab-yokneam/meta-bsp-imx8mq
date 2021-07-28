@@ -29,7 +29,7 @@ Refer to the https://source.codeaurora.org/external/imx/meta-imx/tree/README?h=z
 ## imx8mq
 This example shows how to build an NXP supported image for the `${COMPULAB_MACHINE}`
 [source,console]
-MACHINE=${COMPULAB_MACHINE} source sources/meta-compulab-bsp/meta-bsp-imx8mq/tools/setup-imx8mq-env -b build-xwayland
+MACHINE=${COMPULAB_MACHINE} source sources/meta-bsp-imx8mq/tools/setup-imx8mq-env -b build-xwayland
 bitbake -k fsl-image-qt5-validation-imx
 
 ## Device Trees and available features
