@@ -16,7 +16,8 @@ repo sync
 
 # Download CompuLab meta layer
 [source,console]
-git clone -b rel_imx_5.4.24_2.1.0-dev https://github.com/compulab-yokneam/meta-compulab-bsp.git sources/meta-compulab-bsp
+git clone -b rel_imx_5.4.24_2.1.0-dev https://github.com/compulab-yokneam/meta-bsp-imx8mq.git sources/meta-bsp-imx8mq
+
 
 # Set a desire machine
 * `cl-som-imx8`
