@@ -35,7 +35,7 @@ In order to override the default boot target add `IMXBOOT_TARGETS = <target>` to
 
 Available boot targets:
 |===
-|HDMI|DP|Empty
+|HDMI|DP|W/out any video output firmware
 |IMXBOOT_TARGETS = flash_evk
 |IMXBOOT_TARGETS = flash_dp_evk
 |IMXBOOT_TARGETS = flash_evk_no_hdmi
