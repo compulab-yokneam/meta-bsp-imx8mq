@@ -28,6 +28,20 @@ This example shows how to build an NXP supported image for the `${COMPULAB_MACHI
 MACHINE=${COMPULAB_MACHINE} source sources/meta-bsp-imx8mq/tools/setup-imx8mq-env -b build-xwayland
 bitbake -k imx-image-full
 
+## IMX Boot Target
+The default boot target is `IMXBOOT_TARGETS = flash_evk` configured by https://github.com/compulab-yokneam/meta-bsp-imx8mq/blob/rel_imx_5.4.24_2.1.0-dev/conf/machine/cl-som-imx8.conf#L39[cl-som-imx8.conf].
+
+In order to override the default boot target add `IMXBOOT_TARGETS = <target>` to the conf/local.conf.
+
+Available boot targets:
+|===
+|HDMI|DP|Empty
+|IMXBOOT_TARGETS = flash_evk
+|IMXBOOT_TARGETS = flash_dp_evk
+|IMXBOOT_TARGETS = flash_evk_no_hdmi
+|===
+
+
 ## Device Trees and available features
 * sbc-imx8.dtb -- U-Boot default
 * sbc-imx8-bluetooth.dtb -- i8265 BT instead of usb2 hub
