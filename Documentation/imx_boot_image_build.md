@@ -84,9 +84,9 @@ unset ARCH CROSS_COMPILE
 
 * Set an imx-boot target environment variable:
 
-|HDMI|Display Port|
-|---|---|
-|<pre>export IMX_BOOT_TARGET=flash_evk</pre>|<pre>export IMX_BOOT_TARGET=flash_dp_evk</pre>|
+|HDMI|Display Port|No Display Support|
+|---|---|---|
+|<pre>export IMX_BOOT_TARGET=flash_evk</pre>|<pre>export IMX_BOOT_TARGET=flash_dp_evk</pre>|<pre>export IMX_BOOT_TARGET=flash_evk_no_hdmi</pre>|
 
 * Issue build command:
 <pre>
