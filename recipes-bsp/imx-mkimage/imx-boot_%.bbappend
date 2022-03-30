@@ -1,3 +1,7 @@
+FILESEXTRAPATHS_prepend := "${THISDIR}/compulab/imx8mq:"
+
+require compulab/imx8mq.inc
+
 do_compile_preppend () {
     make_file=${S}/iMX8M/soc.mak
     if [ -e ${make_file} ]; then
