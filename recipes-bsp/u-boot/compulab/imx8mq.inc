@@ -8,5 +8,6 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0006-compulab-mx8mq-ddr-Add-0x01060008-support.patch \
 	file://0007-cl-som-imx8-config-Enable-fastboot.patch \
 	file://0008-cl-som-imx8-Enable-PCIE_VPH.patch \
+	file://0009-plat-imx8mq-ddr-Add-Kingston-4G-support.patch \
 	file://cl-som-imx8_defconfig \
 "
