@@ -63,4 +63,4 @@ fw_setenv fdt_file sbc-imx8-bluetooth.dtb
 NOTE: In `Linux` boot environment device defined by the `/etc/fw_env.config` file.
 
 ## Ready to run precompiled image:
-* https://drive.google.com/file/d/10UlO1jolyjzrIOGBfwKvsGlqTYjRyrQE/view?usp=sharing[imx-image-full-cl-som-imx8.rootfs.sdcard.bz2]
+* https://drive.google.com/drive/folders/1N9r8VjXoTWos3R_uXxY3w13p53ZKxloy[imx-image-full-cl-som-imx8-YYYYMMDDhhmmss.rootfs.wic.bz2]
