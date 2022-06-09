@@ -1,0 +1,55 @@
+From 373cb39b6fec6192e90b0673c82896ec792ae2a3 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Wed, 8 Jun 2022 01:21:42 +0300
+Subject: [PATCH] net: enable random mac if the som eeprom is empty
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ board/compulab/cl-som-imx8/eeprom.c | 11 ++++++++++-
+ configs/cl-som-imx8_defconfig       |  1 +
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/board/compulab/cl-som-imx8/eeprom.c b/board/compulab/cl-som-imx8/eeprom.c
+index fd1fa49e21..10739c142c 100644
+--- a/board/compulab/cl-som-imx8/eeprom.c
++++ b/board/compulab/cl-som-imx8/eeprom.c
+@@ -11,6 +11,7 @@
+ #include <eeprom_field.h>
+ #include <linux/kernel.h>
+ #include <asm/setup.h>
++#include <net.h>
+ 
+ #ifndef CONFIG_SYS_I2C_EEPROM_ADDR
+ #define CONFIG_SYS_I2C_EEPROM_ADDR	0x50
+@@ -126,7 +127,15 @@ int cpl_eeprom_read_mac_addr(uchar *buf, uint eeprom_bus)
+ 	offset = (cpl_eeprom_layout != LAYOUT_LEGACY) ?
+ 			MAC_ADDR_OFFSET : MAC_ADDR_OFFSET_LEGACY;
+ 
+-	return cpl_eeprom_read(offset, buf, 6);
++	err = cpl_eeprom_read(offset, buf, 6);
++	{ /* generate a random address if the som eeprom is empty */
++		u32 mac0, mac2;
++		mac0 = (u32) buf[0];
++		mac2 = (u32) buf[2];
++		if ( mac0 == mac2 )
++			net_random_ethaddr(buf);
++	}
++	return err;
+ }
+ 
+ static u32 board_rev;
+diff --git a/configs/cl-som-imx8_defconfig b/configs/cl-som-imx8_defconfig
+index 27166206b3..bd1b3c55b2 100644
+--- a/configs/cl-som-imx8_defconfig
++++ b/configs/cl-som-imx8_defconfig
+@@ -32,6 +32,7 @@ CONFIG_CMD_FAT=y
+ CONFIG_CMD_FS_GENERIC=y
+ CONFIG_OF_CONTROL=y
+ CONFIG_ENV_IS_IN_MMC=y
++CONFIG_NET_RANDOM_ETHADDR=y
+ CONFIG_IMX8M_LPDDR4=y
+ CONFIG_SAVED_DRAM_TIMING_BASE=0x40000000
+ CONFIG_DM_GPIO=y
+-- 
+2.17.1
+

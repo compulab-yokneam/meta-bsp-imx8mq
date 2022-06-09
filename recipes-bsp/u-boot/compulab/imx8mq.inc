@@ -68,6 +68,9 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0068-cl-som-imx8-Enable-PCIE_VPH.patch \
 	file://0069-compulab-mx8mq-ddr-Add-0x52000008-support.patch \
 	file://0070-cl-som-imx8-defconfig-Set-local-version-1.6.patch \
+	file://0071-cl-som-imx8-net-Enable-phy-Realtek-RTL8211E.patch \
+	file://0072-net-enable-random-mac-if-the-som-eeprom-is-empty.patch \
+	file://0073-cl-som-imx8-defconfig-Set-local-version-1.7.patch \
 "
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
