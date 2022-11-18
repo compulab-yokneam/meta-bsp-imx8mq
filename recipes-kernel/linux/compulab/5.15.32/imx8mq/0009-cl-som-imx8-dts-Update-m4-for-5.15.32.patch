@@ -1,0 +1,76 @@
+From 3b8006c5c9c8f9ac113992c0903ca20cbadb211f Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Fri, 18 Nov 2022 10:20:01 +0200
+Subject: [PATCH] cl-som-imx8: dts: Update m4 for 5.15.32
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm64/boot/dts/compulab/sbc-imx8-m4.dts | 44 ++++++++++++++------
+ 1 file changed, 32 insertions(+), 12 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/compulab/sbc-imx8-m4.dts b/arch/arm64/boot/dts/compulab/sbc-imx8-m4.dts
+index dec58244d93f..8163d3058076 100644
+--- a/arch/arm64/boot/dts/compulab/sbc-imx8-m4.dts
++++ b/arch/arm64/boot/dts/compulab/sbc-imx8-m4.dts
+@@ -14,7 +14,6 @@
+ 
+ #include "sbc-imx8.dts"
+ 
+-#ifdef DDR_M4_SUPPORT
+ / {
+ 	reserved-memory {
+ 		#address-cells = <2>;
+@@ -26,18 +25,39 @@
+ 			reg = <0 0x80000000 0 0x1000000>;
+ 		};
+ 
++		vdev0vring0: vdev0vring0@b8000000 {
++			reg = <0 0xb8000000 0 0x8000>;
++			no-map;
++		};
++
++		vdev0vring1: vdev0vring1@b8008000 {
++			reg = <0 0xb8008000 0 0x8000>;
++			no-map;
++		};
++
++		rsc_table: rsc_table@b80ff000 {
++			reg = <0 0xb80ff000 0 0x1000>;
++			no-map;
++		};
++
++		vdevbuffer: vdevbuffer@b8400000 {
++			compatible = "shared-dma-pool";
++			reg = <0 0xb8400000 0 0x100000>;
++			no-map;
++		};
++	};
++
++	imx8mq-cm4 {
++		compatible = "fsl,imx8mq-cm4";
++		rsc-da = <0xb8000000>;
++		clocks = <&clk IMX8MQ_CLK_M4_DIV>;
++		mbox-names = "tx", "rx", "rxdb";
++		mboxes = <&mu 0 1
++			  &mu 1 1
++			  &mu 3 1>;
++		memory-region = <&vdevbuffer>, <&vdev0vring0>, <&vdev0vring1>, <&rsc_table>;
++		syscon = <&src>;
+ 	};
+-};
+-#endif
+-
+-&rpmsg{
+-	/*
+-	 * 64K for one rpmsg instance:
+-	 * --0xb8000000~0xb800ffff: pingpong
+-	 */
+-	vdev-nums = <1>;
+-	reg = <0x0 0xb8000000 0x0 0x10000>;
+-	status = "okay";
+ };
+ 
+ &uart1 {
+-- 
+2.17.1
+
