@@ -1,7 +1,7 @@
-From 1b18a33275059a55d7eaaa471f0d2698cc4ad52a Mon Sep 17 00:00:00 2001
+From 2d3182745bc61a6ddb275fe8439f9333e42b9886 Mon Sep 17 00:00:00 2001
 From: Valentin Raevsky <valentin@compulab.co.il>
-Date: Wed, 30 Mar 2022 15:07:53 +0000
-Subject: [PATCH] soc: make: Fix for multiple targets
+Date: Sat, 19 Nov 2022 21:01:03 +0200
+Subject: [PATCH 1/1] soc: make: Fix for multiple targets
 
 Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
 ---
@@ -9,31 +9,31 @@ Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
  1 file changed, 1 insertion(+), 3 deletions(-)
 
 diff --git a/iMX8M/soc.mak b/iMX8M/soc.mak
-index 6173912..f29b501 100644
+index 60502d8..005b0b5 100644
 --- a/iMX8M/soc.mak
 +++ b/iMX8M/soc.mak
-@@ -143,7 +143,7 @@ u-boot.itb: $(dtbs)
- 	./$(PAD_IMAGE) u-boot-nodtb.bin $(dtbs)
- 	DEK_BLOB_LOAD_ADDR=$(DEK_BLOB_LOAD_ADDR) TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs) > u-boot.its
- 	./mkimage_uboot -E -p 0x3000 -f u-boot.its u-boot.itb
--	@rm -f u-boot.its $(dtbs)
+@@ -150,7 +150,7 @@ u-boot.itb: $(dtb)
+ 	./$(PAD_IMAGE) u-boot-nodtb.bin $(dtb)
+ 	BL32=$(TEE) DEK_BLOB_LOAD_ADDR=$(DEK_BLOB_LOAD_ADDR) TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtb) > u-boot.its
+ 	mkimage -E -p 0x3000 -f u-boot.its u-boot.itb
+-	@rm -f u-boot.its $(dtb)
 +	@rm -f u-boot.its
  
- dtbs_ddr3l = valddr3l.dtb
- $(dtbs_ddr3l):
-@@ -256,7 +256,6 @@ print_fit_hab: u-boot-nodtb.bin bl31.bin $(dtbs)
+ dtb_ddr3l = valddr3l.dtb
+ $(dtb_ddr3l):
+@@ -289,7 +289,6 @@ print_fit_hab: u-boot-nodtb.bin bl31.bin $(dtb)
  	./$(PAD_IMAGE) bl31.bin
- 	./$(PAD_IMAGE) u-boot-nodtb.bin $(dtbs)
- 	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) VERSION=$(VERSION) ./print_fit_hab.sh $(PRINT_FIT_HAB_OFFSET) $(dtbs)
--	@rm -f $(dtbs)
+ 	./$(PAD_IMAGE) u-boot-nodtb.bin $(dtb)
+ 	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) VERSION=$(VERSION) ./print_fit_hab.sh $(PRINT_FIT_HAB_OFFSET) $(dtb)
+-	@rm -f $(dtb)
  
- print_fit_hab_ddr4: u-boot-nodtb.bin bl31.bin $(dtbs_ddr4_evk)
- 	./$(PAD_IMAGE) tee.bin
-@@ -270,7 +269,6 @@ print_fit_hab_flexspi: u-boot-nodtb.bin bl31.bin $(dtbs)
+ print_fit_hab_ddr4: u-boot-nodtb.bin bl31.bin $(dtb_ddr4_evk)
+ 	./$(PAD_IMAGE) $(TEE)
+@@ -303,7 +302,6 @@ print_fit_hab_flexspi: u-boot-nodtb.bin bl31.bin $(dtb)
  	./$(PAD_IMAGE) bl31.bin
- 	./$(PAD_IMAGE) u-boot-nodtb.bin $(dtbs)
- 	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) VERSION=$(VERSION) BOOT_DEV="flexspi" ./print_fit_hab.sh $(PRINT_FIT_HAB_OFFSET) $(dtbs)
--	@rm -f $(dtbs)
+ 	./$(PAD_IMAGE) u-boot-nodtb.bin $(dtb)
+ 	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) VERSION=$(VERSION) BOOT_DEV="flexspi" ./print_fit_hab.sh $(PRINT_FIT_HAB_OFFSET) $(dtb)
+-	@rm -f $(dtb)
  
  nightly :
  	@echo "Pulling nightly for $(PLAT) evk board from $(SERVER)/$(DIR)"

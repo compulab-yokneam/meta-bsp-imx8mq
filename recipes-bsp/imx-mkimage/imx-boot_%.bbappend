@@ -1,15 +1,23 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/compulab/imx8mq:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/compulab/imx8mq:"
 
 require compulab/imx8mq.inc
 
-do_compile_preppend () {
-    make_file=${S}/iMX8M/soc.mak
-    if [ -e ${make_file} ]; then
-        sed -i "s/dtbs = .*dtb/dtbs = ${UBOOT_DTB_NAME}/g" ${make_file}
-	sed -i "s/\(^TEE_LOAD_ADDR \).*/\1= 0x7e000000/g" ${make_file}
-    fi
+do_compile:prepend() {
+    sed -i "/\$(MKIMG):/ i TEE_LOAD_ADDR = ${TEE_LOAD_ADDR}\n" ${BOOT_STAGING}/soc.mak
 }
 
-addtask compile_preppend before do_compile after do_configure
+do_install:append () {
+        ln -fs ${BOOT_CONFIG_MACHINE}-${target} ${D}/boot/imx-boot
+}
+
+# The imx-boot recipe ignores it, thus prepend does it instead.
+EXTRA_OEMAKE += " \
+    LPDDR_FW_VERSION=_${DDR_FIRMWARE_VERSION} \
+    TEE_LOAD_ADDR=${TEE_LOAD_ADDR} \
+"
+
+# This is a way to pass the TEE_LOAD_ADDR to
+# the Makefile. The main recipe ignores EXTRA_OEMAKE.
+# REV_OPTION = "TEE_LOAD_ADDR=${TEE_LOAD_ADDR}"
 
 COMPATIBLE_MACHINE = "cl-som-imx8"

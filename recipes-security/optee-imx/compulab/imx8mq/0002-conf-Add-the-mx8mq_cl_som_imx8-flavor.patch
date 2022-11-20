@@ -1,0 +1,42 @@
+From 41e0f1b98f9e062fcbaa5409e57b5fba95af1850 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Sat, 19 Nov 2022 19:53:28 +0200
+Subject: [PATCH 2/3] conf: Add the mx8mq_cl_som_imx8 flavor
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ core/arch/arm/plat-imx/conf.mk | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/core/arch/arm/plat-imx/conf.mk b/core/arch/arm/plat-imx/conf.mk
+index db27e3805..6ca2d04de 100644
+--- a/core/arch/arm/plat-imx/conf.mk
++++ b/core/arch/arm/plat-imx/conf.mk
+@@ -60,7 +60,8 @@ mx7ulp-flavorlist = \
+ 	mx7ulpevk
+ 
+ mx8mq-flavorlist = \
+-	mx8mqevk
++	mx8mqevk \
++	mx8mq_cl_som_imx8
+ 
+ mx8mm-flavorlist = \
+ 	mx8mmevk \
+@@ -373,6 +374,14 @@ CFG_NSEC_DDR_1_BASE ?= 0x80000000UL
+ CFG_NSEC_DDR_1_SIZE ?= 0x40000000UL
+ endif
+ 
++ifneq (,$(filter $(PLATFORM_FLAVOR),mx8mq_cl_som_imx8))
++CFG_DDR_SIZE ?= UL(0x180000000)
++CFG_UART_BASE ?= UART3_BASE
++CFG_TZDRAM_START ?= 0x56000000
++$(call force,CFG_CORE_LARGE_PHYS_ADDR,y)
++$(call force,CFG_CORE_ARM64_PA_BITS,36)
++endif
++
+ ifneq (,$(filter $(PLATFORM_FLAVOR),mx8mnevk))
+ CFG_DDR_SIZE ?= 0x80000000
+ CFG_UART_BASE ?= UART2_BASE
+-- 
+2.17.1
+

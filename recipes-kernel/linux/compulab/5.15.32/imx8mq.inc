@@ -1,4 +1,4 @@
-SRC_URI_append_cl-som-imx8 = " \
+SRC_URI:append:cl-som-imx8 = " \
 	file://0000-cl-som-imx8-Add-machine-support.patch \
 	file://0001-cl-som-imx8-dts-Update-for-5.4.24.patch \
 	file://0002-sn65dsi83-Fix-build-issue-for-5.4.24.patch \
@@ -11,5 +11,6 @@ SRC_URI_append_cl-som-imx8 = " \
 	file://0009-cl-som-imx8-dts-Update-m4-for-5.15.32.patch \
 	file://0010-sn65dsi83-Fix-5.15.32-build-issues.patch \
 	file://0011-cl-som-imx8-defconfig-Update-defconfig.patch \
+	file://0012-cl-som-imx8-config-Config-Intel-NIC-as-modules.patch \
 	file://defconfig \
 "

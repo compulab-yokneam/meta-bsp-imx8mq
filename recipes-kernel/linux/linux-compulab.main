@@ -1,6 +1,6 @@
 SUMMARY = "CompuLab Linux Kernel for compulab-imx8m-plus SOM"
 
-inherit kernel fsl-kernel-localversion fsl-vivante-kernel-driver-handler
+inherit kernel-yocto kernel fsl-kernel-localversion fsl-vivante-kernel-driver-handler
 
 LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
@@ -34,13 +34,11 @@ DEFAULT_PREFERENCE = "1"
 KERNEL_VERSION_SANITY_SKIP="1"
 
 # Merged from the bbappend
-FILESEXTRAPATHS_prepend := "${THISDIR}/compulab/${PV}/imx8mq:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/compulab/${PV}/imx8mq:"
 
 require compulab/${PV}/imx8mq.inc
 
-do_shared_workdir[noexec] = "1"
-
-do_configure_append() {
+do_configure:append() {
     if [ -z ${SKIP_MACHINE_DEFCONFIG} ];then
         if [ -z ${KERNEL_CONFIG} ];then
             oe_runmake ${MACHINE}_defconfig
@@ -60,26 +58,26 @@ do_merge_config () {
     mv ${S}/${configs}/compulab_defconfig ${S}/${configs}/${MACHINE}_defconfig
 }
 
-do_compile_prepend() {
+do_compile:prepend() {
     if [ "${BUILD_REPRODUCIBLE_BINARIES}" = "1" ];then
         export SOURCE_DATE_EPOCH=$(date +%s)
     fi
     do_merge_config
 }
 
-do_install_append() {
+do_install:append() {
     oe_runmake headers_install INSTALL_HDR_PATH=${D}${exec_prefix}/src/linux-${KERNEL_VERSION} ARCH=$ARCH
 }
 
-do_kernel_localversion_prepend() {
+do_kernel_localversion:prepend() {
     touch ${WORKDIR}/defconfig
 }
 
 PACKAGES =+ "linux-compulab-headers"
-FILES_linux-compulab-headers = "${exec_prefix}/src/linux*"
+FILES:linux-compulab-headers = "${exec_prefix}/src/linux*"
 
-PACKAGESPLITFUNCS_remove = "split_kernel_module_packages"
+PACKAGESPLITFUNCS:remove = "split_kernel_module_packages"
 
-FILES_${KERNEL_PACKAGE_NAME}-modules = "/lib/modules/ /etc/"
+FILES:${KERNEL_PACKAGE_NAME}-modules = "/lib/modules/ /etc/"
 
 COMPATIBLE_MACHINE = "cl-som-imx8"

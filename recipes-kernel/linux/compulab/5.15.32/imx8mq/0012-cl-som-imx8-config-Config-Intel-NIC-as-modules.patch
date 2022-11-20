@@ -1,0 +1,52 @@
+From 49abf4062ffae1e09af836947fb716ae231681c0 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Sun, 20 Nov 2022 13:06:20 +0200
+Subject: [PATCH] cl-som-imx8: config: Config Intel NIC as modules
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm64/configs/cl-som-imx8_defconfig | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm64/configs/cl-som-imx8_defconfig b/arch/arm64/configs/cl-som-imx8_defconfig
+index 130ff88fc56c..cb6d8317b610 100644
+--- a/arch/arm64/configs/cl-som-imx8_defconfig
++++ b/arch/arm64/configs/cl-som-imx8_defconfig
+@@ -168,7 +168,6 @@ CONFIG_CFG80211=y
+ CONFIG_NL80211_TESTMODE=y
+ CONFIG_CFG80211_WEXT=y
+ CONFIG_MAC80211=y
+-CONFIG_MAC80211_LEDS=y
+ CONFIG_NET_9P=y
+ CONFIG_NET_9P_VIRTIO=y
+ CONFIG_NFC=m
+@@ -295,10 +294,12 @@ CONFIG_HNS_ENET=y
+ CONFIG_HNS3=y
+ CONFIG_HNS3_HCLGE=y
+ CONFIG_HNS3_ENET=y
+-CONFIG_E1000=y
+-CONFIG_E1000E=y
+-CONFIG_IGB=y
+-CONFIG_IGBVF=y
++CONFIG_E1000=m
++CONFIG_E1000E=m
++CONFIG_IGB=m
++CONFIG_IGBVF=m
++CONFIG_IXGB=m
++CONFIG_IXGBE=m
+ CONFIG_MVMDIO=y
+ CONFIG_SKY2=y
+ CONFIG_MLX4_EN=m
+@@ -345,6 +346,9 @@ CONFIG_USB_NET_PLUSB=m
+ CONFIG_USB_NET_MCS7830=m
+ CONFIG_USB_NET_CDC_SUBSET=m
+ CONFIG_USB_NET_ZAURUS=m
++CONFIG_IWLWIFI=m
++CONFIG_IWLDVM=m
++CONFIG_IWLMVM=m
+ CONFIG_HOSTAP=y
+ CONFIG_WL18XX=m
+ CONFIG_WLCORE_SDIO=m
+-- 
+2.17.1
+
