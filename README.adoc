@@ -6,7 +6,7 @@
 
 # Prepare NXP BSP
 [source,console]
-repo init -u git://source.codeaurora.org/external/imx/imx-manifest.git -b imx-linux-zeus -m imx-5.4.24-2.1.0.xml
+repo init -u https://github.com/nxp-imx/imx-manifest.git -b imx-linux-zeus -m imx-5.4.24-2.1.0.xml
 repo sync
 
 # Download CompuLab meta layer
@@ -20,7 +20,8 @@ git clone -b rel_imx_5.4.24_2.1.0-dev https://github.com/compulab-yokneam/meta-b
 COMPULAB_MACHINE=cl-som-imx8
 
 # Build Images
-Refer to the https://source.codeaurora.org/external/imx/meta-imx/tree/README?h=zeus-5.4.24-2.1.0[`NXP Readme`] for details about how to select a correct `backend` & `distro`.
+
+Refer to the https://github.com/nxp-imx/meta-imx/blob/zeus-5.4.24-2.1.0/README[`NXP Readme`] for details about how to select a correct `backend` & `distro`.
 
 ## imx8mq
 This example shows how to build an NXP supported image for the `${COMPULAB_MACHINE}`
