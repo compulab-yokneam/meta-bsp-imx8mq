@@ -1,0 +1,28 @@
+From 1111111111111111111111111111111111111111 Mon Sep 17 00:00:00 2001
+From: Codex <noreply@openai.com>
+Date: Sun, 13 Sep 2026 00:00:00 +0000
+Subject: [PATCH] Signals: include cstdint for uintptr_t
+
+Do not rely on a transitive include to define uintptr_t. GCC 13's standard
+library headers expose the missing direct dependency.
+
+Upstream-Status: Pending
+Signed-off-by: Codex <noreply@openai.com>
+---
+ llvm/include/llvm/Support/Signals.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/llvm/include/llvm/Support/Signals.h b/llvm/include/llvm/Support/Signals.h
+--- a/llvm/include/llvm/Support/Signals.h
++++ b/llvm/include/llvm/Support/Signals.h
+@@ -14,6 +14,7 @@
+ #ifndef LLVM_SUPPORT_SIGNALS_H
+ #define LLVM_SUPPORT_SIGNALS_H
+ 
++#include <cstdint>
+ #include <string>
+ 
+ namespace llvm {
+-- 
+2.43.0
+
