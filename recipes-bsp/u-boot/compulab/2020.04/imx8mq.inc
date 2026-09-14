@@ -12,5 +12,6 @@ SRC_URI:append:cl-som-imx8 = " \
 	file://0010-plat-imx8mq-ddr-Add-Alien-1G-support.patch \
 	file://0011-cl-som-imx8-net-Enable-phy-Realtek-RTL8211E.patch \
 	file://0012-net-enable-random-mac-if-the-som-eeprom-is-empty.patch \
+	file://0013-plat-imx8mq-Update-the-Samsung-2G-lpddr4-timing.patch \
 	file://cl-som-imx8_defconfig \
 "
